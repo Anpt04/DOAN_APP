@@ -1,74 +1,98 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, Text, View, StyleSheet } from 'react-native';
+import PageA from '../2screen/screen1'; // Giả lập trang A
+import PageB from '../2screen/screen2'; // Giả lập trang B
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function App() {
+  const [currentPage, setCurrentPage] = useState('PageA');
 
-export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      {/* Nút chuyển trang */}
+      <View style={styles.header}>
+        <Pressable
+          onPress={() => setCurrentPage('PageA')}
+          style={[
+            styles.button,
+            styles.leftButton,
+            currentPage === 'PageA' && styles.activeButton  // Nếu đang ở PageA thì bo tròn cả 4 góc
+          ]}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              currentPage === 'PageA' && styles.activeButtonText, // Đổi màu chữ nếu đang ở PageA
+            ]}
+          >
+            Tiền chi
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setCurrentPage('PageB')}
+          style={[
+            styles.button,
+            styles.rightButton,
+            currentPage === 'PageB' && styles.activeButton  // Nếu đang ở PageB thì bo tròn cả 4 góc
+          ]}
+
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              currentPage === 'PageB' && styles.activeButtonText, // Đổi màu chữ nếu đang ở PageB
+            ]}
+          >
+            Tiền thu
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Hiển thị trang tương ứng */}
+      {currentPage === 'PageA' ? <PageA /> : <PageB />}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    marginTop: 60,
+    backgroundColor: 'rgb(87, 87, 87)',
+    borderRadius: 8,
+    padding: 2,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  button: {
+    backgroundColor: 'rgb(87, 87, 87)', // Màu nền mặc định
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
   },
+  buttonText: {
+    color: 'rgb(250, 246, 246)', // Màu chữ mặc định
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  activeButton: {
+    backgroundColor: '	rgb(255, 255, 255)', // Màu nền đậm khi được chọn
+    
+  },
+  activeButtonText: {
+    color: 'rgb(1,1,1)', // Màu chữ trắng khi được chọn
+    
+  },
+  leftButton: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  rightButton: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  
 });
