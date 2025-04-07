@@ -54,7 +54,7 @@ const SignUpScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+      <Text style={styles.title}>Đăng kí</Text>
 
       <Text style={styles.label}>Email</Text>
       <TextInput
@@ -65,32 +65,32 @@ const SignUpScreen = () => {
         keyboardType="email-address"
       />
 
-      <Text style={styles.label}>Password</Text>
+      <Text style={styles.label}>Mật khẩu</Text>
       <TextInput
         value={password}
         onChangeText={setPassword}
         style={styles.input}
-        placeholder="Password"
+        placeholder="Mật khẩu"
         secureTextEntry
       />
-      <Text style={styles.label}>Confirm Password</Text>
+      <Text style={styles.label}>Xác nhận mật khẩu</Text>
       <TextInput
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         style={styles.input}
-        placeholder="Confim Password"
+        placeholder="Mật khẩu"
         secureTextEntry
       />
 
-      <Text style={styles.label}>Name</Text>
+      <Text style={styles.label}>Tên</Text>
       <TextInput
         value={name}
         onChangeText={setName}
         style={styles.input}
-        placeholder="Full Name"
+        placeholder="Tên"
       />
 
-      <Button title="Sign Up" onPress={handleSignUp} color="#4CAF50" />
+      <Button title="Đăng kí" onPress={handleSignUp} color="blue" />
       <TouchableOpacity onPress={() => router.push("/Auth/Login")}>
               <Text style={styles.link}>Đã có tài khoản? Đăng nhập</Text>
       </TouchableOpacity>

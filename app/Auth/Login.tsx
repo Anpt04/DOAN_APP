@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from "expo-router";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../DB/firebase/firebaseConfig';
@@ -17,7 +17,6 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       alert('Đăng nhập thành công!');
-      // 👉 Điều hướng tới trang chính sau khi đăng nhập thành công
       router.replace('/');
     } catch (error: any) {
       alert('Đăng nhập thất bại');
@@ -26,6 +25,13 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
+      {/* Thêm logo từ URL */}
+      <Image 
+        source={{ uri: 'https://play-lh.googleusercontent.com/iBDVn0nM77YWK2fFUyZxUY55F57MuVIlMruIdfjvYinCJ6xGz0eG4tkprZukis1CmxI' }}  // Thay bằng URL hình ảnh thực tế
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
       <Text style={styles.title}>Đăng Nhập</Text>
 
       <TextInput
@@ -45,7 +51,6 @@ export default function Login() {
         style={styles.input}
       />
 
-      {/* Thay thế Button bằng TouchableOpacity */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Đăng nhập</Text>
       </TouchableOpacity>
@@ -64,11 +69,18 @@ const styles = StyleSheet.create({
     padding: 20, 
     backgroundColor: 'rgb(255, 254, 254)'
   },
+  logo: {
+    width: 150,
+    height: 150,
+    alignSelf: 'center',
+    marginBottom: 5,
+  },
   title: { 
     fontSize: 28, 
     marginBottom: 20, 
     textAlign: 'center', 
-    fontWeight: 'bold' 
+    fontWeight: 'bold',
+    marginTop: 5, 
   },
   input: {
     borderWidth: 1,
@@ -83,14 +95,14 @@ const styles = StyleSheet.create({
     marginTop: 10 
   },
   button: {
-    backgroundColor: 'blue',  // Màu nền cho nút
+    backgroundColor: 'blue',
     padding: 10, 
     borderRadius: 8,
     marginBottom: 15,
-    alignItems: 'center', // Đảm bảo văn bản nằm chính giữa
+    alignItems: 'center',
   },
   buttonText: {
-    color: 'white', // Màu chữ của nút
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   }
