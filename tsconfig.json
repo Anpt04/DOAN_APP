@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "app/DB/LocalDB/localService.tsx", "app/DB/LocalDB/localDB.tsx", "app/DB/LocalDB/initDB.tsx"  ]
 }
