@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, setDoc, doc } from 'firebase/firestore';
 import firebaseConfig  from '../DB/firebase/firebaseConfig';  // Đảm bảo cấu hình Firebase
+import { copyDefaultCategoriesToUser } from '../DB/firebase/firebaseService';
 
 // Khởi tạo Firebase
 import { initializeApp } from 'firebase/app'; 
@@ -34,15 +35,25 @@ const SignUpScreen = () => {
     try {
       // Đăng ký người dùng với Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Lưu thông tin người dùng vào Firestore
+      const user = userCredential.user;// Lưu thông tin người dùng
       await setDoc(doc(db, 'users', user.uid), {
         name,
         email: user.email,
         password,
         createdAt: new Date(),
       });
+      
+      // Thêm category mặc định
+      await copyDefaultCategoriesToUser(user.uid);
+      
+
+      // // Lưu thông tin người dùng vào Firestore
+      // await setDoc(doc(db, 'users', user.uid), {
+      //   name,
+      //   email: user.email,
+      //   password,
+      //   createdAt: new Date(),
+      // });
 
     alert('Account created successfully');
     router.replace("./Login");

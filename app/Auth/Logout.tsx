@@ -1,7 +1,7 @@
 import { getAuth, signOut } from 'firebase/auth';
 import { router } from 'expo-router';
 
-const handleLogout = async () => {
+const logout = async () => {
     try {
       const auth = getAuth();
       await signOut(auth);
@@ -16,4 +16,5 @@ const handleLogout = async () => {
       alert('Đăng xuất thất bại');
     }
   };
-  
+
+  export default logout; 
