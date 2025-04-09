@@ -1,59 +1,82 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Button, StyleSheet, Text } from "react-native";
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { addTransaction } from "../DB/transactionService";
-import { Picker } from "@react-native-picker/picker";
-import { auth, db } from "../DB/firebase/firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
+import { useCategories } from "../contexts/categoryContext";
 
 const AddTransactionScreen: React.FC = () => {
+  const { categories } = useCategories();
   const [amount, setAmount] = useState<number>(0);
   const [note, setNote] = useState<string>("");
   const [category, setCategory] = useState("");
-  const [categories, setCategories] = useState<{ id: string; name: string; type: 'expense' }[]>(
-    []
-  );
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Lấy userId hiện tại và categories từ Firestore
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userId = user.uid;
-        const catRef = collection(db, "users", userId, "categories");
-        const snapshot = await getDocs(catRef);
-        const catList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name,
-          type: doc.data().type,
-        }));
-        setCategories(catList);
-        if (catList.length > 0) {
-          setCategory(catList[0].id); // Set giá trị mặc định
-        }
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+    if (categories.length > 0) {
+      setCategory(categories[1].id); // chọn danh mục mặc định
+    }
+  }, [categories]);
 
   const handleAdd = async () => {
     const transaction = {
-      type : "expense",
+      type: "expense",
       category,
       amount: parseFloat(amount.toString()),
-      date: new Date().toISOString(),
+      date: date.toISOString(), // sử dụng ngày đã chọn
       note,
     };
+    alert("Thêm giao dịch thành công!");
     await addTransaction(transaction);
     setAmount(0);
     setNote("");
   };
 
+  const onChangeDate = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Thêm giao dịch</Text>
+
+      <Text style={styles.title}>Thêm khoản chi</Text>
+
+      {/* Chọn ngày */}
+      <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+        <Text style={styles.dateText}>📅 {date.toLocaleDateString("vi-VN")}</Text>
+      </TouchableOpacity>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="default"
+          onChange={onChangeDate}
+        />
+      )}
+
+      <TextInput
+        placeholder="Ghi chú"
+        placeholderTextColor="#555" 
+        value={note}
+        onChangeText={setNote}
+        style={styles.input}
+      />
+
       <TextInput
         placeholder="Số tiền"
+        placeholderTextColor="#555" 
         keyboardType="number-pad"
         value={amount === 0 || isNaN(amount) ? "" : amount.toString()}
         onChangeText={(text) => {
@@ -62,33 +85,48 @@ const AddTransactionScreen: React.FC = () => {
         }}
         style={styles.input}
       />
-      <Picker
-        selectedValue={category}
-        onValueChange={(itemValue) => setCategory(itemValue)}
-        style={styles.input}
-      >
-        
+
+      
+
+      <Text style={styles.label}>Chọn danh mục:</Text>
+      <View style={styles.categoryList}>
         {categories
-        .filter((cat) => cat.type === "expense")
-        .map((cat) => (
-          <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
-        ))}
-      </Picker>
-      <TextInput
-        placeholder="Ghi chú"
-        value={note}
-        onChangeText={setNote}
-        style={styles.input}
-      />
-      <Button title="Thêm giao dịch" onPress={handleAdd} />
+          .filter((cat) => cat.type === "expense")
+          .map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[
+                styles.categoryButton,
+                category === cat.id && styles.selectedCategory,
+              ]}
+              onPress={() => setCategory(cat.id)}
+            >
+              <Text
+                style={[
+                  styles.categoryText,
+                  category === cat.id && styles.selectedCategoryText,
+                ]}
+              >
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+      </View>
+
+      
+
+      <TouchableOpacity style={styles.button} onPress={handleAdd}>
+        <Text style={styles.buttonText}>Thêm giao dịch</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    height: "100%",
+    width: "100%",
     padding: 20,
-    marginTop: 100,
     backgroundColor: "rgb(255, 255, 255)",
   },
   title: {
@@ -102,6 +140,54 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 5,
     color: "rgb(1,1,1)",
+  },
+  dateButton: {
+    padding: 10,
+    backgroundColor: "#eee",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  dateText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    fontWeight: "500",
+  },
+  categoryList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 10,
+  },
+  categoryButton: {
+    padding: 10,
+    backgroundColor: "#eee",
+    borderRadius: 5,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  selectedCategory: {
+    backgroundColor: "#4caf50",
+  },
+  categoryText: {
+    color: "#000",
+  },
+  selectedCategoryText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  button: {
+    backgroundColor: "#4caf50",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 

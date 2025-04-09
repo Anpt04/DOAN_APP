@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, Button, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from "expo-router";
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, setDoc, doc } from 'firebase/firestore';
@@ -65,6 +65,11 @@ const SignUpScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Image 
+              source={require('../../assets/images/logo.png')}  // Thay bằng URL hình ảnh thực tế
+              style={styles.logo}
+              resizeMode="contain"
+            />
       <Text style={styles.title}>Đăng kí</Text>
 
       <Text style={styles.label}>Email</Text>
@@ -73,6 +78,7 @@ const SignUpScreen = () => {
         onChangeText={setEmail}
         style={styles.input}
         placeholder="Email"
+        placeholderTextColor="#555" 
         keyboardType="email-address"
       />
 
@@ -82,6 +88,7 @@ const SignUpScreen = () => {
         onChangeText={setPassword}
         style={styles.input}
         placeholder="Mật khẩu"
+        placeholderTextColor="#555" 
         secureTextEntry
       />
       <Text style={styles.label}>Xác nhận mật khẩu</Text>
@@ -89,7 +96,8 @@ const SignUpScreen = () => {
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         style={styles.input}
-        placeholder="Mật khẩu"
+        placeholder="Xác nhận mật khẩu"
+        placeholderTextColor="#555" 
         secureTextEntry
       />
 
@@ -99,9 +107,13 @@ const SignUpScreen = () => {
         onChangeText={setName}
         style={styles.input}
         placeholder="Tên"
+        placeholderTextColor="#555" 
+
       />
 
-      <Button title="Đăng kí" onPress={handleSignUp} color="blue" />
+      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+              <Text style={styles.buttonText}>Đăng kí</Text>
+            </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push("/Auth/Login")}>
               <Text style={styles.link}>Đã có tài khoản? Đăng nhập</Text>
       </TouchableOpacity>
@@ -114,7 +126,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'rgb(255, 254, 254)'
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    alignSelf: 'center',
+    marginBottom: 5,
   },
   title: {
     fontSize: 24,
@@ -139,7 +157,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   button: {
-    marginTop: 20,
+    backgroundColor: 'blue',
+    padding: 10, 
+    borderRadius: 8,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   link: { 
     textAlign: "center",

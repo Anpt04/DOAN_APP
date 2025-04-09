@@ -3,10 +3,17 @@ import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } fro
 import { router } from "expo-router";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../DB/firebase/firebaseConfig';
+import { useCategories } from "../contexts/categoryContext";
+import { collection, getDocs } from 'firebase/firestore'; // ⬅️ Thêm dòng này
+import { db } from '../DB/firebase/firebaseConfig';        // ⬅️ Thêm dòng này
+
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { setCategories } = useCategories(); // ⬅️ Lấy hàm từ context
+
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -15,7 +22,19 @@ export default function Login() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+    // ✅ Lấy danh mục từ Firestore
+    const catRef = collection(db, "users", user.uid, "categories");
+    const snapshot = await getDocs(catRef);
+    const catList = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      name: doc.data().name,
+      type: doc.data().type,
+    }));
+    setCategories(catList); // ✅ Lưu vào context
+
       alert('Đăng nhập thành công!');
       router.replace('/');
     } catch (error: any) {
@@ -27,7 +46,7 @@ export default function Login() {
     <View style={styles.container}>
       {/* Thêm logo từ URL */}
       <Image 
-        source={{ uri: 'https://play-lh.googleusercontent.com/iBDVn0nM77YWK2fFUyZxUY55F57MuVIlMruIdfjvYinCJ6xGz0eG4tkprZukis1CmxI' }}  // Thay bằng URL hình ảnh thực tế
+        source={require('../../assets/images/logo.png')}  // Thay bằng URL hình ảnh thực tế
         style={styles.logo}
         resizeMode="contain"
       />
@@ -36,6 +55,7 @@ export default function Login() {
 
       <TextInput
         placeholder="Email"
+        placeholderTextColor="#555" 
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -45,6 +65,7 @@ export default function Login() {
 
       <TextInput
         placeholder="Mật khẩu"
+        placeholderTextColor="#555" 
         value={password}
         onChangeText={setPassword}
         secureTextEntry

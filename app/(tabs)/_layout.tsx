@@ -7,8 +7,9 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import Entypo from '@expo/vector-icons/Entypo';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import Fontisto from '@expo/vector-icons/Fontisto';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -16,7 +17,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
@@ -31,15 +32,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Nhập vào',
+          tabBarIcon: ({}) => <FontAwesome5 name="pen" size={24} color={'rgb(0, 0, 0)'} />,
         }}
       />
       <Tabs.Screen
         name="auth"
         options={{
           title: 'Auth',
-          tabBarIcon: ({ color }) => <AntDesign name="user" size={24} color={color} />,
+          tabBarIcon: ({}) => <AntDesign name="user" size={24} color={'rgb(0, 0, 0)'} />,
+        }}
+      />
+      <Tabs.Screen
+        name="test"
+        options={{
+          title: 'Test',
+          tabBarIcon: ({}) => <Fontisto name="open-mouth" size={24} color="black" />,
         }}
       />
     </Tabs>
