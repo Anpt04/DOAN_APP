@@ -27,3 +27,4 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 };
 
 export const useCategories = () => useContext(CategoryContext);
+export default CategoryContext;

@@ -30,7 +30,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home Screen</Text>
+      <Text style={styles.title}>Auth Screen</Text>
 
       {/* Nếu chưa đăng nhập, hiển thị nút Login */}
       {!user && (

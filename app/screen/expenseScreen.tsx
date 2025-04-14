@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { addTransaction } from "../DB/transactionService";
 import { useCategories } from "../contexts/categoryContext";
 
@@ -19,28 +19,33 @@ const AddTransactionScreen: React.FC = () => {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  
 
   useEffect(() => {
     if (categories.length > 0) {
-      setCategory(categories[0].id);
+      setCategory(categories[1].id); // chọn danh mục mặc định
     }
   }, [categories]);
 
   const handleAdd = async () => {
+    const selectedCategory = categories.find((cat) => cat.id === category);
+  
     const transaction = {
-      type: "income",
-      category,
+      type: "expense",
+      category: selectedCategory?.id,
+      categoryName: selectedCategory?.name || "Không rõ", // ✅ Thêm trường này
       amount: parseFloat(amount.toString()),
       date: date.toISOString(),
       note,
     };
+  
     alert("Thêm giao dịch thành công!");
     await addTransaction(transaction);
     setAmount(0);
     setNote("");
   };
-
-  const onChangeDate = (_: any, selectedDate?: Date) => {
+  
+  const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setDate(selectedDate);
@@ -50,8 +55,9 @@ const AddTransactionScreen: React.FC = () => {
   return (
     <View style={styles.container}>
 
-      <Text style={styles.title}>Thêm khoản thu</Text>
+      <Text style={styles.title}>Thêm khoản chi</Text>
 
+      {/* Chọn ngày */}
       <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
         <Text style={styles.dateText}>📅 {date.toLocaleDateString("vi-VN")}</Text>
       </TouchableOpacity>
@@ -90,7 +96,7 @@ const AddTransactionScreen: React.FC = () => {
       <Text style={styles.label}>Chọn danh mục:</Text>
       <View style={styles.categoryList}>
         {categories
-          .filter((cat) => cat.type === "income")
+          .filter((cat) => cat.type === "expense")
           .map((cat) => (
             <TouchableOpacity
               key={cat.id}
@@ -113,6 +119,7 @@ const AddTransactionScreen: React.FC = () => {
       </View>
 
       
+
       <TouchableOpacity style={styles.button} onPress={handleAdd}>
         <Text style={styles.buttonText}>Thêm giao dịch</Text>
       </TouchableOpacity>

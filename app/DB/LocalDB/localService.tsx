@@ -4,6 +4,7 @@ export interface Transaction {
   id?: number;
   type: string;
   category: string;
+  categoryName: string; // Thêm trường categoryName
   amount: number;
   date: string;
   note?: string;

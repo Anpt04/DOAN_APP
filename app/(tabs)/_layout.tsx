@@ -37,17 +37,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="test"
+        options={{
+          title: 'Lịch',
+          tabBarIcon: ({  }) => <Fontisto name="calendar" color="black" size={24} />,
+        }}
+        />
+      <Tabs.Screen
         name="auth"
         options={{
           title: 'Auth',
           tabBarIcon: ({}) => <AntDesign name="user" size={24} color={'rgb(0, 0, 0)'} />,
-        }}
-      />
-      <Tabs.Screen
-        name="test"
-        options={{
-          title: 'Test',
-          tabBarIcon: ({}) => <Fontisto name="open-mouth" size={24} color="black" />,
         }}
       />
     </Tabs>

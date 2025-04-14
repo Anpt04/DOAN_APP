@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { addTransaction } from "../DB/transactionService";
 import { useCategories } from "../contexts/categoryContext";
 
@@ -22,16 +22,19 @@ const AddTransactionScreen: React.FC = () => {
 
   useEffect(() => {
     if (categories.length > 0) {
-      setCategory(categories[1].id); // chọn danh mục mặc định
+      setCategory(categories[0].id);
     }
   }, [categories]);
 
   const handleAdd = async () => {
+    const selectedCategory = categories.find((cat) => cat.id === category);
+
     const transaction = {
-      type: "expense",
-      category,
+      type: "income",
+      category: selectedCategory?.id || "", 
+      categoryName: selectedCategory?.name || "Không rõ", 
       amount: parseFloat(amount.toString()),
-      date: date.toISOString(), // sử dụng ngày đã chọn
+      date: date.toISOString(),
       note,
     };
     alert("Thêm giao dịch thành công!");
@@ -40,7 +43,7 @@ const AddTransactionScreen: React.FC = () => {
     setNote("");
   };
 
-  const onChangeDate = (event: any, selectedDate?: Date) => {
+  const onChangeDate = (_: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setDate(selectedDate);
@@ -50,9 +53,8 @@ const AddTransactionScreen: React.FC = () => {
   return (
     <View style={styles.container}>
 
-      <Text style={styles.title}>Thêm khoản chi</Text>
+      <Text style={styles.title}>Thêm khoản thu</Text>
 
-      {/* Chọn ngày */}
       <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
         <Text style={styles.dateText}>📅 {date.toLocaleDateString("vi-VN")}</Text>
       </TouchableOpacity>
@@ -91,7 +93,7 @@ const AddTransactionScreen: React.FC = () => {
       <Text style={styles.label}>Chọn danh mục:</Text>
       <View style={styles.categoryList}>
         {categories
-          .filter((cat) => cat.type === "expense")
+          .filter((cat) => cat.type === "income")
           .map((cat) => (
             <TouchableOpacity
               key={cat.id}
@@ -114,7 +116,6 @@ const AddTransactionScreen: React.FC = () => {
       </View>
 
       
-
       <TouchableOpacity style={styles.button} onPress={handleAdd}>
         <Text style={styles.buttonText}>Thêm giao dịch</Text>
       </TouchableOpacity>
