@@ -1,7 +1,7 @@
 import { getDB } from './localDB';
 
 export interface Transaction {
-  id?: number;
+  id?: string;
   type: string;
   category: string;
   categoryName: string; // Thêm trường categoryName
