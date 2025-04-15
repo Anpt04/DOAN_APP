@@ -47,19 +47,11 @@ const SignUpScreen = () => {
       await copyDefaultCategoriesToUser(user.uid);
       
 
-      // // Lưu thông tin người dùng vào Firestore
-      // await setDoc(doc(db, 'users', user.uid), {
-      //   name,
-      //   email: user.email,
-      //   password,
-      //   createdAt: new Date(),
-      // });
-
-    alert('Account created successfully');
+    alert('Đăng ký thành công!');
     router.replace("./Login");
     } catch (error) {
       console.error(error);
-      alert('An error occurred during sign-up');
+      alert('Đã có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.');
     }
   };
 

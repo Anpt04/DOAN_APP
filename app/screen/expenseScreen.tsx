@@ -28,14 +28,26 @@ const AddTransactionScreen: React.FC = () => {
   }, [categories]);
 
   const handleAdd = async () => {
+    if (amount === 0 || isNaN(amount)) {
+      alert("Số tiền không thể bằng 0");
+      return; 
+    }
+ 
     const selectedCategory = categories.find((cat) => cat.id === category);
+
+    // Đổi ngày sang định dạng yyyy-MM-dd
+    const formattedDate = date
+      .toLocaleDateString('en-GB') // Lấy ngày theo định dạng dd/mm/yyyy
+      .split('/')
+      .reverse()
+      .join('-'); // Đổi sang định dạng yyyy-MM-dd
   
     const transaction = {
       type: "expense",
-      category: selectedCategory?.id,
-      categoryName: selectedCategory?.name || "Không rõ", // ✅ Thêm trường này
+      category: selectedCategory?.id || "",
+      categoryName: selectedCategory?.name || "",
       amount: parseFloat(amount.toString()),
-      date: date.toISOString(),
+      date: formattedDate, // Lưu theo định dạng yyyy-MM-dd
       note,
     };
   

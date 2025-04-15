@@ -1,6 +1,6 @@
 import { db, auth } from "./firebaseConfig";
-import { DocumentReference, collection, addDoc, getDocs } from "firebase/firestore";
-
+import { DocumentReference, collection, addDoc, getDocs, updateDoc, doc, getDoc, deleteDoc } from "firebase/firestore";
+import { Transaction } from "../transactionService";
 // Hàm thêm giao dịch vào Firebase Cloud
 export const addTransactionToCloud = async (transaction: { [key: string]: any }) => {
   const user = auth.currentUser;
@@ -26,6 +26,45 @@ export const getTransactionsFromCloud = async () => {
   }));
 
   return transactions;
+};
+
+export const getTransactionById = async (id: string): Promise<Transaction | null> => {
+  const user = auth.currentUser;
+  if (!user) return null;
+
+  try {
+    const docRef = doc(db, "users", user.uid, "transactions", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+  return {
+    id: docSnap.id,
+    ...(data as Omit<Transaction, "id">), 
+  };
+    } else {
+      console.log("Giao dịch không tồn tại");
+      return null;
+    }
+  } catch (error) {
+    console.error("Lỗi khi lấy giao dịch:", error);
+    return null;
+  }
+};
+
+
+export const updateTransactionToCloud = async (id: string, newData: any) => {
+  const user = auth.currentUser;
+  if (!user) return;
+  const ref = doc(db, "users", user.uid, "transactions", id);
+  await updateDoc(ref, newData);
+};
+
+export const deleteTransaction = async (id: string) => {
+  const user = auth.currentUser;
+  if (!user) return;
+  const docRef = doc(db, "users", user.uid, "transactions", id);
+  await deleteDoc(docRef);
 };
 
 // Hàm sao chép category mặc định cho user mới
