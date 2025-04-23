@@ -7,7 +7,7 @@ const logout = async () => {
       await signOut(auth);
   
       // ✅ Quay lại màn hình đăng nhập
-      router.replace('/Auth/Login');
+      router.replace('/');
       alert('Đăng xuất thành công');
       // Optionally: Thêm thông báo
       // Toast.show({ type: 'success', text1: 'Đăng xuất thành công' });

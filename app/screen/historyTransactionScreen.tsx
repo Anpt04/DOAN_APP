@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
-import { getTransactionsFromCloud } from '../DB/firebase/firebaseService';
+import { getTransactions } from '../DB/service/transactionService';
 
 export function HistoryTransactionScreen() {
   const formatLocalDate = (date: Date): string => {
@@ -22,7 +22,7 @@ export function HistoryTransactionScreen() {
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
-        const data = await getTransactionsFromCloud();
+        const data = await getTransactions();
         setTransactions(data);
       };
       fetchData();
@@ -91,6 +91,7 @@ export function HistoryTransactionScreen() {
       </View>
 
       {/* Tổng tiền thu và chi theo tháng */}
+      <View style={styles.summaryMonthContainer}>
       <View style={styles.summaryMonth}>
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <Text style={[styles.summaryTextMonth, { color: 'skyblue' }]}>Thu</Text>
@@ -99,6 +100,7 @@ export function HistoryTransactionScreen() {
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <Text style={[styles.summaryTextMonth, { color: 'orange' }]}>Chi</Text>
         <Text style={[styles.summaryTextMonth, { color: 'orange' }]}>{totalExpenseForMonth.toLocaleString()}đ</Text>
+        </View>
         </View>
 
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
@@ -117,7 +119,16 @@ export function HistoryTransactionScreen() {
       
       {filteredTransactions.length > 0 ? (
         filteredTransactions.map((item) => (
-          <TouchableOpacity key={item.id} onPress={() => router.push({ pathname: '/screen/editTransactionSceen', params: { id: item.id } })}>
+          <TouchableOpacity key={item.id} onPress={() => {
+            if (item.category === 'buyGold' || item.category === 'sellGold') {
+              Alert.alert(
+                'Không thể chỉnh sửa',
+                'Bạn không thể chỉnh sửa giao dịch vàng.',
+                [{ text: 'OK' }]
+              );
+              return;
+            }
+            router.push({ pathname: '/screen/editTransactionSceen', params: { id: item.id } })}}>
             <View style={styles.item}>
               <Text style={styles.itemText}>{item.categoryName}</Text>
               <Text style={[styles.itemAmount, { color: item.type === 'income' ? 'skyblue' : 'orange' }]}>
@@ -150,14 +161,20 @@ const styles = StyleSheet.create({
     summaryMonth: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        backgroundColor: 'rgb(32, 32, 32)',
-        borderRadius: 10,
-        marginBottom:15,
-        padding: 5,
     },
+    summaryMonthContainer: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: 'rgb(32, 32, 32)',
+      borderRadius: 10,
+      marginBottom:15,
+      padding: 3,
+      
+  },
     summaryTextMonth: {
         fontSize: 16,
-        margin: 5,
+        margin: 3,
     },
   summary: {
     marginBottom: 15,

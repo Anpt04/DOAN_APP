@@ -5,9 +5,18 @@ import { Pressable, Text, View, StyleSheet } from "react-native";
 type Props = {
   currentPage: string;
   setCurrentPage: (page: string) => void;
+  tabLabels: {
+    left: string;
+    right: string;
+  };
+  tabKeys: {
+    left: string;
+    right: string;
+  };
 };
 
-const TabSwitcher: React.FC<Props> = ({ currentPage, setCurrentPage }) => {
+
+const TabSwitcher: React.FC<Props> = ({ currentPage, setCurrentPage, tabLabels, tabKeys }) => {
   return (
     <View style={styles.header}>
       <Pressable
@@ -24,7 +33,7 @@ const TabSwitcher: React.FC<Props> = ({ currentPage, setCurrentPage }) => {
             currentPage === "ExpensePage" && styles.activeButtonText,
           ]}
         >
-          Tiền chi
+          {tabLabels.left}
         </Text>
       </Pressable>
 
@@ -42,8 +51,8 @@ const TabSwitcher: React.FC<Props> = ({ currentPage, setCurrentPage }) => {
             currentPage === "IncomePage" && styles.activeButtonText,
           ]}
         >
-          Tiền thu
-        </Text>
+          {tabLabels.right}
+          </Text>
       </Pressable>
     </View>
   );

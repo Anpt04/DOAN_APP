@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getTransactionById, updateTransactionToCloud, deleteTransaction } from "../DB/firebase/firebaseService";
+import * as transactionService from "../DB/service/transactionService";
 import { useCategories } from "../contexts/categoryContext";
 
 
@@ -29,7 +29,7 @@ const EditTransactionScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
-      const data = await getTransactionById(id);
+      const data = await transactionService.getTransactionById(id);
       if (data) {
         setAmount(data.amount);
         setNote(data.note || "");
@@ -57,7 +57,7 @@ const EditTransactionScreen = () => {
       type,
     };
 
-    await updateTransactionToCloud(id, updated);
+    await transactionService.updateTransaction(id, updated);
     alert("Cập nhật thành công!");
     router.back();
   };
@@ -69,7 +69,7 @@ const EditTransactionScreen = () => {
         text: "Xóa",
         style: "destructive",
         onPress: async () => {
-          await deleteTransaction(id);
+          await transactionService.deleteTransaction(id);
           alert("Đã xóa giao dịch!");
           router.back();
         },
@@ -109,15 +109,20 @@ const EditTransactionScreen = () => {
         style={styles.input}
       />
 
-      <TextInput
-        placeholder="Số tiền"
-        placeholderTextColor="#555"
-        keyboardType="number-pad"
-        value={amount === 0 || isNaN(amount) ? "" : amount.toString()}
-        onChangeText={(text) => {
-          const newAmount = parseFloat(text);
-          setAmount(isNaN(newAmount) ? 0 : newAmount);
-        }}
+       <TextInput
+          placeholder="Số tiền"
+          placeholderTextColor="#555"
+          keyboardType="number-pad"
+          value={
+            amount === 0 || isNaN(amount)
+              ? ""
+              : amount.toLocaleString("en-US") // Hiển thị có dấu phẩy
+          }
+          onChangeText={(text) => {
+            const raw = text.replace(/,/g, ""); // Xóa dấu phẩy người dùng nhập
+            const newAmount = parseFloat(raw);
+            setAmount(isNaN(newAmount) ? 0 : newAmount);
+          }}
         style={styles.input}
       />
 

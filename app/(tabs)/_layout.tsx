@@ -10,6 +10,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -37,12 +38,26 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="test"
+        name="gold"
+        options={{
+          title: 'Vàng',
+          tabBarIcon: ({}) => <MaterialCommunityIcons name="gold" size={24} color={'rgb(0, 0, 0)'} />,
+        }}
+      />
+      <Tabs.Screen
+        name="historyTransaction"
         options={{
           title: 'Lịch',
           tabBarIcon: ({  }) => <Fontisto name="calendar" color="black" size={24} />,
         }}
         />
+        <Tabs.Screen
+        name="report"
+        options={{
+          title: 'Báo cáo',
+          tabBarIcon: ({}) => <AntDesign name="barschart" size={24} color={'rgb(0, 0, 0)'} />,
+        }}
+      />
       <Tabs.Screen
         name="auth"
         options={{
@@ -50,6 +65,7 @@ export default function TabLayout() {
           tabBarIcon: ({}) => <AntDesign name="user" size={24} color={'rgb(0, 0, 0)'} />,
         }}
       />
+      
     </Tabs>
   );
 }
