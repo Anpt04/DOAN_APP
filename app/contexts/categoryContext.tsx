@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAllCategoriesFromCloud } from "../DB/firebase/firebaseService";
+import { getAllCategoriesFromSQLite } from "../DB/LocalDB/localService";
 
 export type Category = {
   id: string;
@@ -8,16 +11,35 @@ export type Category = {
 
 type CategoryContextType = {
   categories: Category[];
-  setCategories: (categories: Category[]) => void; // ✅ THÊM vào đây
+  setCategories: (categories: Category[]) => void;
 };
 
 const CategoryContext = createContext<CategoryContextType>({
   categories: [],
-  setCategories: () => {}, // ✅ THÊM vào đây
+  setCategories: () => {},
 });
 
 export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const auth = getAuth();
+
+    // Lắng nghe khi người dùng đăng nhập hoặc đăng xuất
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        console.log("👤 Logged in, loading categories from Firestore");
+        const cloudCategories = await getAllCategoriesFromCloud();
+        setCategories(cloudCategories);
+      } else {
+        console.log("🙅 Not logged in, loading categories from SQLite");
+        const localCategories = await getAllCategoriesFromSQLite();
+        setCategories(localCategories);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <CategoryContext.Provider value={{ categories, setCategories }}>
@@ -27,4 +49,3 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 };
 
 export const useCategories = () => useContext(CategoryContext);
-export default CategoryContext;

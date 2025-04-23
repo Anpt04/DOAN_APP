@@ -8,8 +8,9 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
+import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { addTransaction } from "../DB/transactionService";
+import { addTransaction } from "../DB/service/transactionService";
 import { useCategories } from "../contexts/categoryContext";
 
 const AddTransactionScreen: React.FC = () => {
@@ -92,17 +93,20 @@ const AddTransactionScreen: React.FC = () => {
 
       <TextInput
         placeholder="Số tiền"
-        placeholderTextColor="#555" 
+        placeholderTextColor="#555"
         keyboardType="number-pad"
-        value={amount === 0 || isNaN(amount) ? "" : amount.toString()}
+        value={
+          amount === 0 || isNaN(amount)
+            ? ""
+            : amount.toLocaleString("en-US") // Hiển thị có dấu phẩy
+        }
         onChangeText={(text) => {
-          const newAmount = parseFloat(text);
+          const raw = text.replace(/,/g, ""); // Xóa dấu phẩy người dùng nhập
+          const newAmount = parseFloat(raw);
           setAmount(isNaN(newAmount) ? 0 : newAmount);
         }}
         style={styles.input}
       />
-
-      
 
       <Text style={styles.label}>Chọn danh mục:</Text>
       <View style={styles.categoryList}>
@@ -127,6 +131,9 @@ const AddTransactionScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           ))}
+          <TouchableOpacity style={[styles.categoryButton]}  onPress={() => router.push('/screen/editCategory')}>
+                      <Text style={[styles.categoryText, { color: "rgb(1,1,1)" }]}>Khác</Text>
+          </TouchableOpacity>          
       </View>
 
       

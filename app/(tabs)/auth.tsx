@@ -22,7 +22,7 @@ export default function HomeScreen() {
     try {
       const auth = getAuth();
       await signOut(auth); // Đăng xuất người dùng
-      router.replace("/Auth/Login"); // Điều hướng về màn hình đăng nhập
+      router.replace("/"); // Điều hướng về màn hình đăng nhập
     } catch (error) {
       alert("Đăng xuất thất bại");
     }

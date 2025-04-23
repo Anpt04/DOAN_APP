@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { CategoryProvider } from './contexts/categoryContext'; // đường dẫn tùy bạn đặt file
+import { initDatabase } from './DB/LocalDB/localDB'; // đường dẫn tùy bạn đặt file
 
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -19,6 +20,18 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  useEffect(() => {
+    const setup = async () => {
+      try {
+        await initDatabase(); // ✅ tự động mở và tạo bảng
+        console.log('Database initialized successfully');
+      } catch (e) {
+        console.error('DB setup failed:', e);
+      }
+    };
+    setup();
+  }, []);
 
   useEffect(() => {
     if (loaded) {
