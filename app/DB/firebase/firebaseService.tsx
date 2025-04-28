@@ -1,6 +1,5 @@
 import { db, auth } from "./firebaseConfig";
 import {
-  DocumentReference,
   collection,
   addDoc,
   getDocs,
@@ -8,7 +7,9 @@ import {
   doc,
   getDoc,
   deleteDoc,
-  writeBatch
+  writeBatch, 
+  query,
+  where,
 } from "firebase/firestore";
 import { Transaction } from "../service/transactionService";
 import { Category } from "../../contexts/categoryContext"; // Cập nhật đường dẫn nếu khác
@@ -69,6 +70,33 @@ export const getTransactionByIdFromCLoud = async (id: string): Promise<Transacti
   } catch (error) {
     console.error("Lỗi khi lấy giao dịch:", error);
     return null;
+  }
+};
+
+export const getTransactionByCategoryIdFromCloud = async (categoryId: string): Promise<Transaction[]> => {
+  const user = auth.currentUser;
+  if (!user) return [];
+
+  try {
+    const transactionsRef = collection(db, "users", user.uid, "transactions");
+    const q = query(transactionsRef, where("category", "==", categoryId));
+    const querySnapshot = await getDocs(q);
+
+    const transactions: Transaction[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      transactions.push({
+        id: doc.id,
+        ...(data as Omit<Transaction, "id">),
+      });
+    });
+
+    console.log("🗂️ Giao dịch theo categoryId từ Firestore:", transactions);
+    return transactions;
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy giao dịch theo categoryId từ Firestore:", error);
+    return [];
   }
 };
 

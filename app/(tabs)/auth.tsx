@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { Link } from "expo-router";
 import { getAuth, signOut, onAuthStateChanged, User } from "firebase/auth";
 import { router } from "expo-router";
@@ -14,7 +14,6 @@ export default function HomeScreen() {
       setUser(currentUser); // Cập nhật thông tin người dùng khi trạng thái thay đổi
     });
 
-    // Dọn dẹp khi component unmount
     return () => unsubscribe();
   }, []);
 
@@ -30,12 +29,12 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Auth Screen</Text>
+      
 
       {/* Nếu chưa đăng nhập, hiển thị nút Login */}
       {!user && (
         <Link href="../Auth/Login" asChild>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.loginButton}>
             <Text style={styles.buttonText}>Đi đến Login</Text>
           </TouchableOpacity>
         </Link>
@@ -44,7 +43,7 @@ export default function HomeScreen() {
       {/* Nút điều hướng đến màn hình Register */}
       {!user && (
         <Link href="../Auth/Register" asChild>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.loginButton}>
           <Text style={styles.buttonText}>Đi đến Register</Text>
         </TouchableOpacity>
       </Link>
@@ -64,24 +63,23 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-end",
     alignItems: "center",
     backgroundColor: "rgb(255, 255, 255)",
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  button: {
+  
+  loginButton: {
     backgroundColor: "blue",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginTop: 20,
+    width: "100%",
   },
   buttonText: {
     color: "white",
     fontSize: 16,
+    textAlign: "center",
   },
   logoutButton: {
     backgroundColor: "red",
@@ -89,9 +87,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     marginTop: 20,
+    width: "100%",
   },
   logoutText: {
     color: "white",
     fontSize: 16,
+    textAlign: "center",
   },
 });

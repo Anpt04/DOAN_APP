@@ -1,84 +1,65 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   TextInput,
-  TouchableOpacity,
+  Button,
   StyleSheet,
-  Alert,
+  Text,
+  TouchableOpacity,
   Platform,
 } from "react-native";
+import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import * as transactionService from "../DB/service/transactionService";
-import { useCategories } from "../contexts/categoryContext";
+import { addTransaction } from "../../DB/service/transactionService";
+import { useCategories } from "../../contexts/categoryContext";
 
-
-const EditTransactionScreen = () => {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+const AddTransactionScreen: React.FC = () => {
   const { categories } = useCategories();
-
   const [amount, setAmount] = useState<number>(0);
   const [note, setNote] = useState<string>("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState(new Date());
-  const [type, setType] = useState<"expense" | "income">();
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!id) return;
-      const data = await transactionService.getTransactionById(id);
-      if (data) {
-        setAmount(data.amount);
-        setNote(data.note || "");
-        setCategory(data.category);
-        setDate(new Date(data.date));
-        setType(data.type as "expense" | "income");
-      }
-    };
-    fetchData();
-  }, [id]);
-  
-  const handleUpdate = async () => {
-    if (amount <= 0 || isNaN(amount)) {
-      alert("Số tiền không hợp lệ!");
-      return;
+    if (categories.length > 0) {
+      setCategory(categories[0].id);
     }
+  }, [categories]);
 
+  const handleAdd = async () => {
+    if (amount === 0 || isNaN(amount)) {
+      alert("Số tiền không thể bằng 0");
+      return; 
+    }
+ 
     const selectedCategory = categories.find((cat) => cat.id === category);
-    const updated = {
-      amount,
-      note,
-      date: date.toISOString(),
+
+    // Đổi ngày sang định dạng yyyy-MM-dd
+    const formattedDate = date
+      .toLocaleDateString('en-GB') // Lấy ngày theo định dạng dd/mm/yyyy
+      .split('/')
+      .reverse()
+      .join('-'); // Đổi sang định dạng yyyy-MM-dd
+  
+    const transaction = {
+      type: "income",
       category: selectedCategory?.id || "",
       categoryName: selectedCategory?.name || "",
-      type,
+      amount: parseFloat(amount.toString()),
+      date: formattedDate, // Lưu theo định dạng yyyy-MM-dd
+      note,
     };
-
-    await transactionService.updateTransaction(id, updated);
-    alert("Cập nhật thành công!");
-    router.back();
+  
+    alert("Thêm giao dịch thành công!");
+    await addTransaction(transaction);
+    setAmount(0);
+    setNote("");
   };
+  
 
-  const handleDelete = async () => {
-    Alert.alert("Xác nhận", "Bạn có chắc muốn xóa giao dịch này?", [
-      { text: "Hủy" },
-      {
-        text: "Xóa",
-        style: "destructive",
-        onPress: async () => {
-          await transactionService.deleteTransaction(id);
-          alert("Đã xóa giao dịch!");
-          router.back();
-        },
-      },
-    ]);
-  };
-
-  const onChangeDate = (_event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
+  const onChangeDate = (_: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setDate(selectedDate);
     }
@@ -86,7 +67,8 @@ const EditTransactionScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Chỉnh sửa giao dịch</Text>
+
+      <Text style={styles.title}>Thêm khoản thu</Text>
 
       <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
         <Text style={styles.dateText}>📅 {date.toLocaleDateString("vi-VN")}</Text>
@@ -103,33 +85,33 @@ const EditTransactionScreen = () => {
 
       <TextInput
         placeholder="Ghi chú"
-        placeholderTextColor="#555"
+        placeholderTextColor="#555" 
         value={note}
         onChangeText={setNote}
         style={styles.input}
       />
 
-       <TextInput
-          placeholder="Số tiền"
-          placeholderTextColor="#555"
-          keyboardType="number-pad"
-          value={
-            amount === 0 || isNaN(amount)
-              ? ""
-              : amount.toLocaleString("en-US") // Hiển thị có dấu phẩy
-          }
-          onChangeText={(text) => {
-            const raw = text.replace(/,/g, ""); // Xóa dấu phẩy người dùng nhập
-            const newAmount = parseFloat(raw);
-            setAmount(isNaN(newAmount) ? 0 : newAmount);
-          }}
+      <TextInput
+        placeholder="Số tiền"
+        placeholderTextColor="#555"
+        keyboardType="number-pad"
+        value={
+          amount === 0 || isNaN(amount)
+            ? ""
+            : amount.toLocaleString("en-US") // Hiển thị có dấu phẩy
+        }
+        onChangeText={(text) => {
+          const raw = text.replace(/,/g, ""); // Xóa dấu phẩy người dùng nhập
+          const newAmount = parseFloat(raw);
+          setAmount(isNaN(newAmount) ? 0 : newAmount);
+        }}
         style={styles.input}
       />
 
       <Text style={styles.label}>Chọn danh mục:</Text>
       <View style={styles.categoryList}>
         {categories
-          .filter((cat) => cat.type === type)
+          .filter((cat) => cat.type === "income")
           .map((cat) => (
             <TouchableOpacity
               key={cat.id}
@@ -149,27 +131,25 @@ const EditTransactionScreen = () => {
               </Text>
             </TouchableOpacity>
           ))}
+          <TouchableOpacity style={[styles.categoryButton]}  onPress={() => router.push('/screen/editCategory')}>
+                      <Text style={[styles.categoryText, { color: "rgb(1,1,1)" }]}>Khác</Text>
+          </TouchableOpacity>          
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-        <Text style={styles.buttonText}>💾 Lưu chỉnh sửa</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-        <Text style={styles.deleteButtonText}>🗑️ Xóa giao dịch</Text>
+      
+      <TouchableOpacity style={styles.button} onPress={handleAdd}>
+        <Text style={styles.buttonText}>Thêm giao dịch</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-export default EditTransactionScreen;
 
 const styles = StyleSheet.create({
   container: {
     height: "100%",
     width: "100%",
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "rgb(255, 255, 255)",
   },
   title: {
     fontSize: 24,
@@ -181,7 +161,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
-    color: "#000",
+    color: "rgb(1,1,1)",
   },
   dateButton: {
     padding: 10,
@@ -225,23 +205,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 10,
   },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
-  deleteButton: {
-    backgroundColor: "#f44336",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
 });
+
+export default AddTransactionScreen;

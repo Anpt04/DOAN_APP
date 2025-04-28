@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from "expo-router";
+import { Feather } from '@expo/vector-icons';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, setDoc, doc } from 'firebase/firestore';
-import firebaseConfig  from '../DB/firebase/firebaseConfig';  // Đảm bảo cấu hình Firebase
+import firebaseConfig from '../DB/firebase/firebaseConfig';
 import { copyDefaultCategoriesToUser } from '../DB/firebase/firebaseService';
+import { initializeApp } from 'firebase/app';
 
-// Khởi tạo Firebase
-import { initializeApp } from 'firebase/app'; 
 const app = initializeApp(firebaseConfig);
 
 const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
+  const [name, setName] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
   const auth = getAuth();
   const db = getFirestore();
@@ -25,30 +26,26 @@ const SignUpScreen = () => {
       alert('Please fill in all fields');
       return;
     }
-    
+
     if (password !== confirmPassword) {
       alert('Passwords do not match');
       return;
     }
-    
 
     try {
-      // Đăng ký người dùng với Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;// Lưu thông tin người dùng
+      const user = userCredential.user;
       await setDoc(doc(db, 'users', user.uid), {
         name,
         email: user.email,
         password,
         createdAt: new Date(),
       });
-      
-      // Thêm category mặc định
-      await copyDefaultCategoriesToUser(user.uid);
-      
 
-    alert('Đăng ký thành công!');
-    router.replace("./Login");
+      await copyDefaultCategoriesToUser(user.uid);
+
+      alert('Đăng ký thành công!');
+      router.replace("./Login");
     } catch (error) {
       console.error(error);
       alert('Đã có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.');
@@ -58,10 +55,10 @@ const SignUpScreen = () => {
   return (
     <View style={styles.container}>
       <Image 
-              source={require('../../assets/images/logo.png')}  // Thay bằng URL hình ảnh thực tế
-              style={styles.logo}
-              resizeMode="contain"
-            />
+        source={require('../../assets/images/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
       <Text style={styles.title}>Đăng kí</Text>
 
       <Text style={styles.label}>Email</Text>
@@ -70,28 +67,47 @@ const SignUpScreen = () => {
         onChangeText={setEmail}
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#555" 
+        placeholderTextColor="#555"
         keyboardType="email-address"
       />
 
       <Text style={styles.label}>Mật khẩu</Text>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        placeholder="Mật khẩu"
-        placeholderTextColor="#555" 
-        secureTextEntry
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          style={styles.passwordInput}
+          placeholder="Mật khẩu"
+          placeholderTextColor="#555"
+          secureTextEntry={!isPasswordVisible}
+        />
+        <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+          <Feather 
+            name={isPasswordVisible ? 'eye-off' : 'eye'} 
+            size={22} 
+            color="#555" 
+          />
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.label}>Xác nhận mật khẩu</Text>
-      <TextInput
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        style={styles.input}
-        placeholder="Xác nhận mật khẩu"
-        placeholderTextColor="#555" 
-        secureTextEntry
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          style={styles.passwordInput}
+          placeholder="Xác nhận mật khẩu"
+          placeholderTextColor="#555"
+          secureTextEntry={!isConfirmPasswordVisible}
+        />
+        <TouchableOpacity onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}>
+          <Feather 
+            name={isConfirmPasswordVisible ? 'eye-off' : 'eye'} 
+            size={22} 
+            color="#555" 
+          />
+        </TouchableOpacity>
+      </View>
 
       <Text style={styles.label}>Tên</Text>
       <TextInput
@@ -99,15 +115,15 @@ const SignUpScreen = () => {
         onChangeText={setName}
         style={styles.input}
         placeholder="Tên"
-        placeholderTextColor="#555" 
-
+        placeholderTextColor="#555"
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-              <Text style={styles.buttonText}>Đăng kí</Text>
-            </TouchableOpacity>
+        <Text style={styles.buttonText}>Đăng kí</Text>
+      </TouchableOpacity>
+      
       <TouchableOpacity onPress={() => router.push("/Auth/Login")}>
-              <Text style={styles.link}>Đã có tài khoản? Đăng nhập</Text>
+        <Text style={styles.link}>Đã có tài khoản? Đăng nhập</Text>
       </TouchableOpacity>
     </View>
   );
@@ -148,9 +164,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#fff',
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+  },
+  passwordInput: {
+    flex: 1,
+    height: 45,
+    fontSize: 16,
+  },
   button: {
     backgroundColor: 'blue',
-    padding: 10, 
+    padding: 10,
     borderRadius: 8,
     marginBottom: 15,
     alignItems: 'center',
@@ -160,11 +191,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  link: { 
+  link: {
     textAlign: "center",
-    color: "blue", 
-    marginTop: 10 
-  },  
+    color: "blue",
+    marginTop: 10
+  },
 });
 
 export default SignUpScreen;

@@ -63,8 +63,8 @@ export default TabSwitcher;
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    marginBottom: 10,
-    marginTop: 60,
+    marginBottom: 5,
+    marginTop: 40,
     backgroundColor: "rgb(87, 87, 87)",
     borderRadius: 10,
     padding: 2,

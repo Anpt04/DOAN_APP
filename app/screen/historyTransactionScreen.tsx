@@ -8,14 +8,14 @@ import { getTransactions } from '../DB/service/transactionService';
 export function HistoryTransactionScreen() {
   const formatLocalDate = (date: Date): string => {
     const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, '0'); // tháng bắt đầu từ 0
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
   
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
-    return formatLocalDate(today); // Lấy ngày đúng theo giờ địa phương
+    return formatLocalDate(today);
   });
   const [transactions, setTransactions] = useState<any[]>([]);
 
@@ -73,39 +73,44 @@ export function HistoryTransactionScreen() {
   const { totalIncomeForMonth, totalExpenseForMonth, totalForMonth } = getTotalIncomeAndExpenseForMonth(transactions, currentMonth);
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      
+    
+      <View style={styles.container}>
       <View style={styles.calendar}>
-        <Calendar
-          onDayPress={(day: { dateString: string }) => setSelectedDate(day.dateString)}
-          markedDates={{
-            [selectedDate]: { selected: true, marked: true, selectedColor: '#f06292' },
-          }}
-          theme={{
-            calendarBackground: 'rgb(83, 119, 173)',
-            dayTextColor: '#fff',
-            monthTextColor: '#fff',
-            arrowColor: '#f06292',
-          }}
-        />
+      <Calendar
+        onDayPress={(day: { dateString: string }) => setSelectedDate(day.dateString)}
+        onMonthChange={(month: { year: number; month: number }) => {
+          const currentDay = parseInt(selectedDate.split('-')[2], 10);
+          const newDate = new Date(month.year, month.month - 1, currentDay);
+        
+          const newSelectedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+          setSelectedDate(newSelectedDate);
+        }}
+        
+        markedDates={{
+          [selectedDate]: { selected: true, marked: true, selectedColor: '#f06292' },
+        }}
+        theme={{
+          calendarBackground: 'rgb(83, 119, 173)',
+          dayTextColor: '#fff',
+          monthTextColor: '#fff',
+          arrowColor: '#f06292',
+        }}
+      />
       </View>
 
       {/* Tổng tiền thu và chi theo tháng */}
       <View style={styles.summaryMonthContainer}>
       <View style={styles.summaryMonth}>
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={[styles.summaryTextMonth, { color: 'skyblue' }]}>Thu</Text>
-        <Text style={[styles.summaryTextMonth, { color: 'skyblue' }]}> {totalIncomeForMonth.toLocaleString()}đ</Text>
+        <Text style={[styles.summaryTextMonth, { color: 'skyblue' }]}>Thu:  {totalIncomeForMonth.toLocaleString()}đ</Text>
         </View>
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={[styles.summaryTextMonth, { color: 'orange' }]}>Chi</Text>
-        <Text style={[styles.summaryTextMonth, { color: 'orange' }]}>{totalExpenseForMonth.toLocaleString()}đ</Text>
+        <Text style={[styles.summaryTextMonth, { color: 'orange' }]}>Chi: {totalExpenseForMonth.toLocaleString()}đ</Text>
         </View>
         </View>
 
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={[styles.summaryTextMonth, { color: 'white' }]}>Tổng</Text>
-        <Text style={[styles.summaryTextMonth, { color: 'white' }]}>{totalForMonth.toLocaleString()}đ</Text>
+        <Text style={[styles.summaryTextMonth, { color: 'white' }]}>Tổng: {totalForMonth.toLocaleString()}đ</Text>
         </View>
       </View>
 
@@ -116,7 +121,7 @@ export function HistoryTransactionScreen() {
         <Text style={[styles.summaryText, { color: 'white' }]}>Tổng ngày: {(totalIncome - totalExpense).toLocaleString()}đ</Text>
       </View>
       
-      
+      <ScrollView contentContainerStyle={styles.scrollContainer}> 
       {filteredTransactions.length > 0 ? (
         filteredTransactions.map((item) => (
           <TouchableOpacity key={item.id} onPress={() => {
@@ -128,7 +133,7 @@ export function HistoryTransactionScreen() {
               );
               return;
             }
-            router.push({ pathname: '/screen/editTransactionSceen', params: { id: item.id } })}}>
+            router.push({ pathname: '/screen/editTransactionScreen', params: { id: item.id } })}}>
             <View style={styles.item}>
               <Text style={styles.itemText}>{item.categoryName}</Text>
               <Text style={[styles.itemAmount, { color: item.type === 'income' ? 'skyblue' : 'orange' }]}>
@@ -143,39 +148,47 @@ export function HistoryTransactionScreen() {
         </Text>
       )}
     </ScrollView>
+    
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'rgb(117, 117, 117)',
+    paddingTop: 20,
+    paddingHorizontal: 10,
+  },
   scrollContainer: {
     width: '100%',
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: 10,
+    backgroundColor: 'rgb(117, 117, 117)',
     flexGrow: 1,
+    borderRadius: 10,
   },
   calendar: {
     borderRadius: 10,
     marginBottom: 15,
     overflow: 'hidden',
   },
-    summaryMonth: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    summaryMonthContainer: {
-      flexDirection: 'column',
-      alignItems: 'center',
+  summaryMonth: {
+      flexDirection: 'row',
       justifyContent: 'space-between',
-      backgroundColor: 'rgb(32, 32, 32)',
-      borderRadius: 10,
-      marginBottom:15,
-      padding: 3,
-      
   },
-    summaryTextMonth: {
-        fontSize: 16,
-        margin: 3,
-    },
+  summaryMonthContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgb(32, 32, 32)',
+    borderRadius: 10,
+    marginBottom:15,
+    padding: 3,
+  },
+  summaryTextMonth: {
+      fontSize: 16,
+      margin: 3,
+  },
   summary: {
     marginBottom: 15,
     padding: 10,
