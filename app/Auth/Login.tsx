@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from "expo-router";
+import { Feather } from '@expo/vector-icons'; 
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../DB/firebase/firebaseConfig';
 import { useCategories } from "../contexts/categoryContext";
-import { collection, getDocs } from 'firebase/firestore'; // ⬅️ Thêm dòng này
-import { db } from '../DB/firebase/firebaseConfig';        // ⬅️ Thêm dòng này
-
-
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../DB/firebase/firebaseConfig';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { setCategories } = useCategories(); // ⬅️ Lấy hàm từ context
-
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false); // 👈 thêm state
+  const { setCategories } = useCategories();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -25,15 +24,14 @@ export default function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-    // ✅ Lấy danh mục từ Firestore
-    const catRef = collection(db, "users", user.uid, "categories");
-    const snapshot = await getDocs(catRef);
-    const catList = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      name: doc.data().name,
-      type: doc.data().type,
-    }));
-    setCategories(catList); // ✅ Lưu vào context
+      const catRef = collection(db, "users", user.uid, "categories");
+      const snapshot = await getDocs(catRef);
+      const catList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        name: doc.data().name,
+        type: doc.data().type,
+      }));
+      setCategories(catList);
 
       alert('Đăng nhập thành công!');
       router.replace('/');
@@ -44,9 +42,8 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      {/* Thêm logo từ URL */}
       <Image 
-        source={require('../../assets/images/logo.png')}  // Thay bằng URL hình ảnh thực tế
+        source={require('../../assets/images/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -55,7 +52,7 @@ export default function Login() {
 
       <TextInput
         placeholder="Email"
-        placeholderTextColor="#555" 
+        placeholderTextColor="#555"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -63,14 +60,23 @@ export default function Login() {
         style={styles.input}
       />
 
-      <TextInput
-        placeholder="Mật khẩu"
-        placeholderTextColor="#555" 
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          placeholder="Mật khẩu"
+          placeholderTextColor="#555"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!isPasswordVisible}
+          style={styles.passwordInput}
+        />
+        <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+          <Feather 
+            name={isPasswordVisible ? 'eye-off' : 'eye'} 
+            size={24} 
+            color="#555" 
+          />
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Đăng nhập</Text>
@@ -105,19 +111,32 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc', 
+    borderColor: '#ccc',
     padding: 10, 
     borderRadius: 8,
     marginBottom: 15
   },
-  link: { 
-    textAlign: "center",
-    color: "blue", 
-    marginTop: 10 
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 10,
+  },
+  eyeIcon: {
+    fontSize: 22,
+    marginLeft: 10,
+    color: '#555',
   },
   button: {
     backgroundColor: 'blue',
-    padding: 10, 
+    padding: 10,
     borderRadius: 8,
     marginBottom: 15,
     alignItems: 'center',
@@ -126,5 +145,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-  }
+  },
+  link: { 
+    textAlign: "center",
+    color: "blue", 
+    marginTop: 10 
+  },
 });

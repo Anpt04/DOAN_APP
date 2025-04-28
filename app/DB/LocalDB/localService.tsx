@@ -68,6 +68,24 @@ export const getTransactionByIdFromLocal = async (id: string): Promise<Transacti
   }
 };
 
+export const getTransactionByCategoryIdFromLocal = async (id: string): Promise<Transaction[]> => {
+  try {
+    const db = getDB();
+    if (!db) throw new Error("Database not initialized");
+
+    const result = await db.getAllAsync<Transaction>(
+      'SELECT * FROM transactions WHERE category = ?;',
+      [id]
+    );
+    console.log("🗂️ Giao dịch theo categoryId từ SQLite:", result);
+    return result || [];
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy giao dịch theo categoryId từ SQLite:", error);
+    return [];
+  }
+};
+
+
 export const updateTransactionToLocal = async (id: string, newData: Partial<Transaction>) => {
   try {
     const db = getDB();

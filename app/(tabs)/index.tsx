@@ -1,9 +1,8 @@
-// index.tsx hoặc file root App
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import TabSwitcher from '../../components/TabSwitcher';
-import ExpensePage from '../screen/expenseScreen';
-import IncomePage from '../screen/incomeScreen';
+import ExpensePage from '../screen/transaction/expenseScreen';
+import IncomePage from '../screen/transaction/incomeScreen';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("ExpensePage");

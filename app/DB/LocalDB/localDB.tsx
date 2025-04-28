@@ -11,6 +11,7 @@ export const initDatabase = async (): Promise<void> => {
 
     await createTransactionsTable(); // Gọi tạo bảng luôn sau khi mở
     await createCategoriesTable(); // Tạo bảng categories
+    
   } catch (error) {
     console.error('❌ Error initializing database:', error);
     throw error;

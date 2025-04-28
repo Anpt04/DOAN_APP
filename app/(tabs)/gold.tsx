@@ -1,4 +1,3 @@
-// index.tsx hoặc file root App
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import TabSwitcher from '../../components/TabSwitcher';

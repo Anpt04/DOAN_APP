@@ -52,6 +52,13 @@ export const deleteTransaction = async (id: string) => {
   }
 };
 
+export const getTransactionsByCategory = async (categoryId: string): Promise<Transaction[]> => {
+  if (auth.currentUser) {
+    return await CloudService.getTransactionByCategoryIdFromCloud(categoryId);
+  } else {
+    return await LocalService.getTransactionByCategoryIdFromLocal(categoryId);
+  }
+}
 
 export default {
   addTransaction,
@@ -59,5 +66,6 @@ export default {
   getTransactionById,
   updateTransaction,
   deleteTransaction,
+  getTransactionsByCategory,
 };
 

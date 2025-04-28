@@ -9,8 +9,8 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import { useCategories } from "../contexts/categoryContext";  // Đảm bảo đã có hook này
-import * as categoryService from "../DB/service/categoryService";  // Đảm bảo đã có các hàm này
+import { useCategories } from "../contexts/categoryContext"; 
+import * as categoryService from "../DB/service/categoryService";  
 import { Category } from "../contexts/categoryContext";
 
 const CategoryManagerScreen = () => {

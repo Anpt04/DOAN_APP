@@ -9,9 +9,9 @@ import {
   Platform,
 } from "react-native";
 import { router } from "expo-router";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { addTransaction } from "../DB/service/transactionService";
-import { useCategories } from "../contexts/categoryContext";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { addTransaction } from "../../DB/service/transactionService";
+import { useCategories } from "../../contexts/categoryContext";
 
 const AddTransactionScreen: React.FC = () => {
   const { categories } = useCategories();
@@ -20,10 +20,11 @@ const AddTransactionScreen: React.FC = () => {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  
 
   useEffect(() => {
     if (categories.length > 0) {
-      setCategory(categories[0].id);
+      setCategory(categories[2].id);
     }
   }, [categories]);
 
@@ -43,7 +44,7 @@ const AddTransactionScreen: React.FC = () => {
       .join('-'); // Đổi sang định dạng yyyy-MM-dd
   
     const transaction = {
-      type: "income",
+      type: "expense",
       category: selectedCategory?.id || "",
       categoryName: selectedCategory?.name || "",
       amount: parseFloat(amount.toString()),
@@ -57,8 +58,7 @@ const AddTransactionScreen: React.FC = () => {
     setNote("");
   };
   
-
-  const onChangeDate = (_: any, selectedDate?: Date) => {
+  const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setDate(selectedDate);
@@ -68,8 +68,9 @@ const AddTransactionScreen: React.FC = () => {
   return (
     <View style={styles.container}>
 
-      <Text style={styles.title}>Thêm khoản thu</Text>
+      <Text style={styles.title}>Thêm khoản chi</Text>
 
+      {/* Chọn ngày */}
       <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
         <Text style={styles.dateText}>📅 {date.toLocaleDateString("vi-VN")}</Text>
       </TouchableOpacity>
@@ -82,7 +83,7 @@ const AddTransactionScreen: React.FC = () => {
           onChange={onChangeDate}
         />
       )}
-
+      <Text style={styles.label}>Ghi chú:</Text>
       <TextInput
         placeholder="Ghi chú"
         placeholderTextColor="#555" 
@@ -111,7 +112,7 @@ const AddTransactionScreen: React.FC = () => {
       <Text style={styles.label}>Chọn danh mục:</Text>
       <View style={styles.categoryList}>
         {categories
-          .filter((cat) => cat.type === "income")
+          .filter((cat) => cat.type === "expense")
           .map((cat) => (
             <TouchableOpacity
               key={cat.id}
@@ -130,13 +131,13 @@ const AddTransactionScreen: React.FC = () => {
                 {cat.name}
               </Text>
             </TouchableOpacity>
+            
           ))}
           <TouchableOpacity style={[styles.categoryButton]}  onPress={() => router.push('/screen/editCategory')}>
-                      <Text style={[styles.categoryText, { color: "rgb(1,1,1)" }]}>Khác</Text>
-          </TouchableOpacity>          
+            <Text style={[styles.categoryText, { color: "rgb(1,1,1)" }]}>Khác</Text>
+          </TouchableOpacity>
       </View>
 
-      
       <TouchableOpacity style={styles.button} onPress={handleAdd}>
         <Text style={styles.buttonText}>Thêm giao dịch</Text>
       </TouchableOpacity>

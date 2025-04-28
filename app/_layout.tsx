@@ -6,13 +6,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { CategoryProvider } from './contexts/categoryContext'; // đường dẫn tùy bạn đặt file
-import { initDatabase } from './DB/LocalDB/localDB'; // đường dẫn tùy bạn đặt file
-
-
+import { CategoryProvider } from './contexts/categoryContext'; 
+import { initDatabase } from './DB/LocalDB/localDB';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -24,7 +20,7 @@ export default function RootLayout() {
   useEffect(() => {
     const setup = async () => {
       try {
-        await initDatabase(); // ✅ tự động mở và tạo bảng
+        await initDatabase(); 
         console.log('Database initialized successfully');
       } catch (e) {
         console.error('DB setup failed:', e);
@@ -48,8 +44,12 @@ export default function RootLayout() {
       <CategoryProvider>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="Auth/Login" options={{ headerShown: false }} />
-        <Stack.Screen name="Auth/Register" options={{ headerShown: false }} />
+        <Stack.Screen name="Auth/Login" options={{ headerShown: true, title: 'Đăng nhập', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="Auth/Register" options={{ headerShown: true, title: 'Đăng ký', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="screen/editCategory" options={{ headerShown: true, title: 'Thêm mới danh mục', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="screen/editTransactionScreen" options={{ headerShown: true, title: 'Chỉnh sửa giao dịch', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="screen/reportTransaction/reportDetail" options={{ headerShown: true, title: 'Chi tiết', headerTitleAlign: 'center' }} />
+
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
