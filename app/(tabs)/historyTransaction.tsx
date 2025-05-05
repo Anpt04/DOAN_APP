@@ -1,1 +1,1 @@
-export {default} from '../screen/historyTransactionScreen';
+export {default} from '../screen/transaction/historyTransactionScreen';

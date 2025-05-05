@@ -29,7 +29,12 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      
+
+      <Link href="../screen/setMonthlyLimitScreen" asChild>
+          <TouchableOpacity style={styles.loginButton}>
+            <Text style={styles.buttonText}>Hạn mức chi tiêu của tháng</Text>
+          </TouchableOpacity>
+        </Link>
 
       {/* Nếu chưa đăng nhập, hiển thị nút Login */}
       {!user && (
@@ -66,6 +71,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
     backgroundColor: "rgb(255, 255, 255)",
+    
   },
   
   loginButton: {

@@ -47,7 +47,7 @@ export default function RootLayout() {
         <Stack.Screen name="Auth/Login" options={{ headerShown: true, title: 'Đăng nhập', headerTitleAlign: 'center' }} />
         <Stack.Screen name="Auth/Register" options={{ headerShown: true, title: 'Đăng ký', headerTitleAlign: 'center' }} />
         <Stack.Screen name="screen/editCategory" options={{ headerShown: true, title: 'Thêm mới danh mục', headerTitleAlign: 'center' }} />
-        <Stack.Screen name="screen/editTransactionScreen" options={{ headerShown: true, title: 'Chỉnh sửa giao dịch', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="screen/transaction/editTransactionScreen" options={{ headerShown: true, title: 'Chỉnh sửa giao dịch', headerTitleAlign: 'center' }} />
         <Stack.Screen name="screen/reportTransaction/reportDetail" options={{ headerShown: true, title: 'Chi tiết', headerTitleAlign: 'center' }} />
 
         <Stack.Screen name="+not-found" />

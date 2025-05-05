@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
 import { getTransactions, Transaction } from '../../DB/service/transactionService';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const screenWidth = Dimensions.get('window').width - 40;
 const COLORS = ['tomato', 'blue', 'gold', 'green', 'orange', 'purple', 'cyan'];
@@ -87,7 +88,7 @@ export default function ReportScreen() {
 
       <View style={styles.monthSelection}>
         <TouchableOpacity onPress={() => changeMonth('prev')} style={styles.arrowButton}>
-          <Text style={styles.arrowText}>{'<'}</Text>
+        <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.monthButton} onPress={showDatePicker}>
           <Text style={styles.monthButtonText}>
@@ -95,7 +96,7 @@ export default function ReportScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => changeMonth('next')} style={styles.arrowButton}>
-          <Text style={styles.arrowText}>{'>'}</Text>
+        <Ionicons name="arrow-forward" size={24} color="black" />
         </TouchableOpacity>
       </View>
 
@@ -138,7 +139,7 @@ export default function ReportScreen() {
           />
         </View>
       ) : (
-        <Text style={styles.noData}>Không có dữ liệu.</Text>
+        <Text style={styles.noData}>Chưa có khoản chi trong tháng này.</Text>
       )}
 
       <FlatList

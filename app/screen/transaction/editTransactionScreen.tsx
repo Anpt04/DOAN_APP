@@ -10,9 +10,8 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import * as transactionService from "../DB/service/transactionService";
-import { useCategories } from "../contexts/categoryContext";
-
+import * as transactionService from "../../DB/service/transactionService";
+import { useCategories } from "../../contexts/categoryContext";
 
 const EditTransactionScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -40,10 +39,10 @@ const EditTransactionScreen = () => {
     };
     fetchData();
   }, [id]);
-  
+
   const handleUpdate = async () => {
     if (amount <= 0 || isNaN(amount)) {
-      alert("Số tiền không hợp lệ!");
+      Alert.alert("Lỗi", "Số tiền không hợp lệ!");
       return;
     }
 
@@ -58,8 +57,12 @@ const EditTransactionScreen = () => {
     };
 
     await transactionService.updateTransaction(id, updated);
-    alert("Cập nhật thành công!");
-    router.back();
+    Alert.alert("Thành công", "Cập nhật thành công!", [
+      {
+        text: "OK",
+        onPress: () => router.back(),
+      },
+    ]);
   };
 
   const handleDelete = async () => {
@@ -70,8 +73,12 @@ const EditTransactionScreen = () => {
         style: "destructive",
         onPress: async () => {
           await transactionService.deleteTransaction(id);
-          alert("Đã xóa giao dịch!");
-          router.back();
+          Alert.alert("Thành công", "Đã xóa giao dịch!", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
         },
       },
     ]);
@@ -109,20 +116,20 @@ const EditTransactionScreen = () => {
         style={styles.input}
       />
 
-       <TextInput
-          placeholder="Số tiền"
-          placeholderTextColor="#555"
-          keyboardType="number-pad"
-          value={
-            amount === 0 || isNaN(amount)
-              ? ""
-              : amount.toLocaleString("en-US")
-          }
-          onChangeText={(text) => {
-            const raw = text.replace(/,/g, "");
-            const newAmount = parseFloat(raw);
-            setAmount(isNaN(newAmount) ? 0 : newAmount);
-          }}
+      <TextInput
+        placeholder="Số tiền"
+        placeholderTextColor="#555"
+        keyboardType="number-pad"
+        value={
+          amount === 0 || isNaN(amount)
+            ? ""
+            : amount.toLocaleString("en-US")
+        }
+        onChangeText={(text) => {
+          const raw = text.replace(/,/g, "");
+          const newAmount = parseFloat(raw);
+          setAmount(isNaN(newAmount) ? 0 : newAmount);
+        }}
         style={styles.input}
       />
 

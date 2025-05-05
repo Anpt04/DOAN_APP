@@ -11,7 +11,7 @@ export const initDatabase = async (): Promise<void> => {
 
     await createTransactionsTable(); // Gọi tạo bảng luôn sau khi mở
     await createCategoriesTable(); // Tạo bảng categories
-    
+    await createMonthLimitTable(); // Tạo bảng monthLimits
   } catch (error) {
     console.error('❌ Error initializing database:', error);
     throw error;
@@ -78,6 +78,25 @@ const createCategoriesTable = async (): Promise<void> => {
     console.log('✅ Default categories inserted');
   } catch (error) {
     console.error('❌ Error creating categories table or inserting defaults:', error);
+    throw error;
+  }
+};
+
+const createMonthLimitTable = async (): Promise<void> => {
+  if (!db) {
+    throw new Error('Database not initialized.');
+  }
+
+  try {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS monthLimits (
+      month TEXT PRIMARY KEY,
+      amountLimit REAL
+    );
+    `);
+    console.log('✅ monthLimits table created');
+  } catch (error) {
+    console.error('❌ Error creating transactions table:', error);
     throw error;
   }
 };

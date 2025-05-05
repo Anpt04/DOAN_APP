@@ -187,8 +187,39 @@ export const deleteCategoryFromLocal = async (id: string) => {
   }
 };
 
+export const setMonthlyLimitToLocal = async (month: string, amountLimit: number): Promise<void> => {
+  try {
+    const db = getDB();
+    if (!db) throw new Error("Database not initialized");
+    await db.runAsync(
+      `INSERT OR REPLACE INTO monthLimits (month, amountLimit) VALUES (?, ?)`,
+      [month, amountLimit]
+    );
+  } catch (error) {
+    console.error("❌ Lỗi khi thiết lập giới hạn hàng tháng trong SQLite:", error);
+    throw error;
+  }
+};
 
-export const getAllCategoriesFromSQLite = async (): Promise<Category[]> => {
+export const getMonthlyLimitFromLocal = async (month: string): Promise<number | null> => {
+  try {
+    const db = getDB();
+    if (!db) throw new Error("Database not initialized");
+
+    const result = await db.getFirstAsync(
+      `SELECT amountLimit FROM monthLimits WHERE month = ?`,
+      [month]
+    ) as { amountLimit: number } | undefined;
+
+    return result?.amountLimit ?? null;
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy hạn mức tháng từ SQLite:", error);
+    throw error;
+  }
+};
+
+
+export const getAllCategoriesFromLocal = async (): Promise<Category[]> => {
   try {
     const db = getDB();
     if (!db) throw new Error("Database not initialized");
