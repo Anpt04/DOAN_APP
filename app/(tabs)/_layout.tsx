@@ -59,9 +59,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="auth"
+        name="setting"
         options={{
-          title: 'Auth',
+          title: 'Khác',
           tabBarIcon: ({}) => <AntDesign name="user" size={24} color={'rgb(0, 0, 0)'} />,
         }}
       />

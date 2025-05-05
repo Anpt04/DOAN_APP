@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
-  Button,
   StyleSheet,
   Text,
   TouchableOpacity,
   Platform,
+  Alert,
 } from "react-native";
 import { router } from "expo-router";
+import { auth } from "../../DB/firebase/firebaseConfig";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { addTransaction } from "../../DB/service/transactionService";
 import { useCategories } from "../../contexts/categoryContext";
@@ -20,44 +21,47 @@ const AddTransactionScreen: React.FC = () => {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
 
   useEffect(() => {
-    if (categories.length > 0) {
-      setCategory(categories[2].id);
+    const user = auth.currentUser;
+    if (!user) {
+      if (categories.length > 0) {
+        setCategory(categories[2].id);
+      }
+    } else {
+      setCategory(categories[0].id);
     }
   }, [categories]);
 
   const handleAdd = async () => {
     if (amount === 0 || isNaN(amount)) {
-      alert("Số tiền không thể bằng 0");
-      return; 
+      Alert.alert("Lỗi", "Số tiền không thể bằng 0");
+      return;
     }
- 
+
     const selectedCategory = categories.find((cat) => cat.id === category);
 
-    // Đổi ngày sang định dạng yyyy-MM-dd
     const formattedDate = date
-      .toLocaleDateString('en-GB') // Lấy ngày theo định dạng dd/mm/yyyy
+      .toLocaleDateString('en-GB')
       .split('/')
       .reverse()
-      .join('-'); // Đổi sang định dạng yyyy-MM-dd
-  
+      .join('-');
+
     const transaction = {
       type: "expense",
       category: selectedCategory?.id || "",
       categoryName: selectedCategory?.name || "",
       amount: parseFloat(amount.toString()),
-      date: formattedDate, // Lưu theo định dạng yyyy-MM-dd
+      date: formattedDate,
       note,
     };
-  
-    alert("Thêm giao dịch thành công!");
+
+    Alert.alert("Thành công", "Thêm giao dịch thành công!");
     await addTransaction(transaction);
     setAmount(0);
     setNote("");
   };
-  
+
   const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
@@ -67,10 +71,8 @@ const AddTransactionScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-
       <Text style={styles.title}>Thêm khoản chi</Text>
 
-      {/* Chọn ngày */}
       <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
         <Text style={styles.dateText}>📅 {date.toLocaleDateString("vi-VN")}</Text>
       </TouchableOpacity>
@@ -79,14 +81,15 @@ const AddTransactionScreen: React.FC = () => {
         <DateTimePicker
           value={date}
           mode="date"
-          display="default"
+          display="spinner"
           onChange={onChangeDate}
         />
       )}
+
       <Text style={styles.label}>Ghi chú:</Text>
       <TextInput
         placeholder="Ghi chú"
-        placeholderTextColor="#555" 
+        placeholderTextColor="#555"
         value={note}
         onChangeText={setNote}
         style={styles.input}
@@ -99,10 +102,10 @@ const AddTransactionScreen: React.FC = () => {
         value={
           amount === 0 || isNaN(amount)
             ? ""
-            : amount.toLocaleString("en-US") // Hiển thị có dấu phẩy
+            : amount.toLocaleString("en-US")
         }
         onChangeText={(text) => {
-          const raw = text.replace(/,/g, ""); // Xóa dấu phẩy người dùng nhập
+          const raw = text.replace(/,/g, "");
           const newAmount = parseFloat(raw);
           setAmount(isNaN(newAmount) ? 0 : newAmount);
         }}
@@ -131,11 +134,13 @@ const AddTransactionScreen: React.FC = () => {
                 {cat.name}
               </Text>
             </TouchableOpacity>
-            
           ))}
-          <TouchableOpacity style={[styles.categoryButton]}  onPress={() => router.push('/screen/editCategory')}>
-            <Text style={[styles.categoryText, { color: "rgb(1,1,1)" }]}>Khác</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.categoryButton]}
+          onPress={() => router.push('/screen/editCategory')}
+        >
+          <Text style={[styles.categoryText, { color: "rgb(1,1,1)" }]}>Khác</Text>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleAdd}>

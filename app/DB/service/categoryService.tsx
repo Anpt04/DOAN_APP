@@ -22,7 +22,7 @@ export const getAllCategories = async (): Promise<Category[]> => {
   if (auth.currentUser) {
     return await CloudService.getAllCategoriesFromCloud();
   } else {
-    return await LocalService.getAllCategoriesFromSQLite();
+    return await LocalService.getAllCategoriesFromLocal();
   }
 };
 

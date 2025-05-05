@@ -99,7 +99,7 @@ export default function ReportDetailScreen() {
                         );
                         return;
                       }
-                      router.push({ pathname: '/screen/editTransactionScreen', params: { id: item.id } })}}>
+                      router.push({ pathname: '/screen/transaction/editTransactionScreen', params: { id: item.id } })}}>
            <View style={styles.txItem}>
             {/* Group date and name together */}
             <View style={styles.txLeft}>

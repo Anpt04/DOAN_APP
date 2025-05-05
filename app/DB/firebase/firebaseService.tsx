@@ -10,6 +10,7 @@ import {
   writeBatch, 
   query,
   where,
+  setDoc,
 } from "firebase/firestore";
 import { Transaction } from "../service/transactionService";
 import { Category } from "../../contexts/categoryContext"; // Cập nhật đường dẫn nếu khác
@@ -163,8 +164,48 @@ export const deleteCategoryFromCloud = async (id: string) => {
   }
 };
 
+export const setMonthlyLimitToCloud = async (
+  month: string,
+  amountLimit: number
+): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    const docRef = doc(db, "users", user.uid, "MonthlyLimit", month);
+    await setDoc(docRef, { amountLimit }, { merge: true });
+
+    alert("Thiết lập hạn mức chi tiêu thành công!");
+  } catch (error) {
+    console.error("❌ Lỗi khi thiết lập hạn mức chi tiêu lên Firestore:", error);
+    throw error;
+  }
+};
+
+export const getMonthlyLimitFromCloud = async (month: string): Promise<number | null> => {
+  const user = auth.currentUser;
+  if (!user) return null;
+
+  try {
+    const docRef = doc(db, "users", user.uid, "MonthlyLimit", month);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      return data.amountLimit ?? null;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy hạn mức tháng từ Firestore:", error);
+    throw error;
+  }
+};
+
+
 export const getAllCategoriesFromCloud = async (): Promise<Category[]> => {
   const user = auth.currentUser;
+
   if (!user) return [];
 
   try {
@@ -178,6 +219,7 @@ export const getAllCategoriesFromCloud = async (): Promise<Category[]> => {
         type: data.type as "income" | "expense",
       };
     });
+    console.log("🗂️ Danh mục từ Firestore:", categories);
     return categories;
   } catch (error) {
     console.error("Lỗi khi lấy danh mục", error);

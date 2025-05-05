@@ -60,6 +60,23 @@ export const getTransactionsByCategory = async (categoryId: string): Promise<Tra
   }
 }
 
+export const setMonthlyLimits = async (month: string, amountLimit: number) => {
+  if (auth.currentUser) {
+    await CloudService.setMonthlyLimitToCloud(month, amountLimit);
+  } else {
+    await LocalService.setMonthlyLimitToLocal(month, amountLimit);
+  }
+};
+
+export const getMonthlyLimits = async (month: string): Promise<number | null> => {
+  if (auth.currentUser) {
+    return await CloudService.getMonthlyLimitFromCloud(month);
+  } else {
+    return await LocalService.getMonthlyLimitFromLocal(month);
+  }
+};
+
+
 export default {
   addTransaction,
   getTransactions,

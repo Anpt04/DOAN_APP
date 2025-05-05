@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getAllCategoriesFromCloud } from "../DB/firebase/firebaseService";
-import { getAllCategoriesFromSQLite } from "../DB/LocalDB/localService";
+import { getAllCategoriesFromLocal } from "../DB/LocalDB/localService";
 
 export type Category = {
   id: string;
@@ -33,7 +33,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setCategories(cloudCategories);
       } else {
         console.log("🙅 Not logged in, loading categories from SQLite");
-        const localCategories = await getAllCategoriesFromSQLite();
+        const localCategories = await getAllCategoriesFromLocal();
         setCategories(localCategories);
       }
     });
