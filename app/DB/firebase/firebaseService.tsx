@@ -242,6 +242,16 @@ export const getAllCategoriesFromCloud = async (): Promise<Category[]> => {
   }
 };
 
+export const uploadTransactionToFirebase = async (tx: Transaction, uid: string) => {
+  const ref = doc(collection(db, "users", uid, "transactions"));
+  await setDoc(ref, tx);
+}
+
+export const uploadCategoryToFirebase = async (cat: Category, uid: string) => {
+  const ref = doc(collection(db, "users", uid, "categories"));
+  await setDoc(ref, cat);
+}
+
 export const copyDefaultCategoriesToUser = async (userId: string) => {
   const batch = writeBatch(db);
 

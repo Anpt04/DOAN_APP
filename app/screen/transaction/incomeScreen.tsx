@@ -23,13 +23,12 @@ const AddTransactionScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      if (categories.length > 0) {
-        setCategory(categories[0].id);
-      }
+    const incomeList = categories.filter(cat => cat.type === "income");
+  
+    if (incomeList.length === 0) {
+      return;
     } else {
-      setCategory(categories[2]?.id || "");
+      setCategory(incomeList[0].id);
     }
   }, [categories]);
 
