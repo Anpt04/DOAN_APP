@@ -5,8 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
 import { getTransactions, Transaction } from '../../DB/service/transactionService';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const screenWidth = Dimensions.get('window').width - 40;
 const COLORS = ['rgb(110, 211, 64)', 'rgb(55, 211, 231)', 'rgb(112, 192, 37)', 'rgb(204, 81, 235)', 'rgb(55, 211, 231)', 'rgb(240, 81, 81)', 'rgb(77, 231, 103)'];
@@ -89,7 +88,7 @@ export default function ReportScreen() {
 
       <View style={styles.monthSelection}>
         <TouchableOpacity onPress={() => changeMonth('prev')} style={styles.arrowButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+          <AntDesign name="caretleft" size={24} color="black" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.monthButton} onPress={showDatePicker}>
           <Text style={styles.monthButtonText}>
@@ -97,7 +96,7 @@ export default function ReportScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => changeMonth('next')} style={styles.arrowButton}>
-        <Ionicons name="arrow-forward" size={24} color="black" />
+          <AntDesign name="caretright" size={24} color="black" />
         </TouchableOpacity>
       </View>
 

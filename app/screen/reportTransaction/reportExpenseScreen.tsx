@@ -5,10 +5,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
 import { getTransactions, Transaction } from '../../DB/service/transactionService';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-
+import AntDesign from '@expo/vector-icons/AntDesign';
 const screenWidth = Dimensions.get('window').width - 40;
-const COLORS = ['tomato', 'blue', 'gold', 'green', 'orange', 'purple', 'cyan'];
+const COLORS = ['rgba(238, 137, 137, 0.72)', 'blue', 'gold', 'green', 'orange', 'purple', 'cyan'];
 
 interface ChartSlice {
   id: string;
@@ -88,7 +87,7 @@ export default function ReportScreen() {
 
       <View style={styles.monthSelection}>
         <TouchableOpacity onPress={() => changeMonth('prev')} style={styles.arrowButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+          <AntDesign name="caretleft" size={24} color="black" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.monthButton} onPress={showDatePicker}>
           <Text style={styles.monthButtonText}>
@@ -96,7 +95,7 @@ export default function ReportScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => changeMonth('next')} style={styles.arrowButton}>
-        <Ionicons name="arrow-forward" size={24} color="black" />
+          <AntDesign name="caretright" size={24} color="black" />
         </TouchableOpacity>
       </View>
 

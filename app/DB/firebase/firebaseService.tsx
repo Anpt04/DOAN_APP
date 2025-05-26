@@ -13,7 +13,8 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { Transaction } from "../service/transactionService";
-import { Category } from "../../contexts/categoryContext"; // Cập nhật đường dẫn nếu khác
+import { Category } from "../../contexts/categoryContext";
+import { defaultCategories } from "./defaultCategories";
 
 // Hàm thêm giao dịch vào Firebase Cloud
 export const addTransactionToCloud = async (transaction: { [key: string]: any }) => {
@@ -202,6 +203,20 @@ export const getMonthlyLimitFromCloud = async (month: string): Promise<number | 
   }
 };
 
+export const deleteMonthlyLimitFromCloud = async (month: string): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    const docRef = doc(db, "users", user.uid, "MonthlyLimit", month);
+    await deleteDoc(docRef);
+    console.log(`✅ Đã xóa hạn mức chi tiêu cho tháng ${month} khỏi Firestore.`);
+  } catch (error) {
+    console.error("❌ Lỗi khi xóa hạn mức chi tiêu khỏi Firestore:", error);
+    throw error;
+  }
+};
+
 
 export const getAllCategoriesFromCloud = async (): Promise<Category[]> => {
   const user = auth.currentUser;
@@ -228,13 +243,11 @@ export const getAllCategoriesFromCloud = async (): Promise<Category[]> => {
 };
 
 export const copyDefaultCategoriesToUser = async (userId: string) => {
-  const defaultCategoriesSnap = await getDocs(collection(db, "default_categories"));
-
   const batch = writeBatch(db);
-  defaultCategoriesSnap.forEach((docSnap) => {
-    const categoryData = docSnap.data();
-    const userCatRef = doc(db, "users", userId, "categories", docSnap.id);
-    batch.set(userCatRef, categoryData);
+
+  defaultCategories.forEach((category) => {
+    const userCatRef = doc(db, "users", userId, "categories", category.id);
+    batch.set(userCatRef, category);
   });
 
   await batch.commit();

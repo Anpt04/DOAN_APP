@@ -218,6 +218,22 @@ export const getMonthlyLimitFromLocal = async (month: string): Promise<number | 
   }
 };
 
+export const deleteMonthlyLimitFromLocal = async (month: string): Promise<void> => {
+  try {
+    const db = getDB();
+    if (!db) throw new Error("Database not initialized");
+
+    await db.runAsync(
+      `DELETE FROM monthLimits WHERE month = ?`,
+      [month]
+    );
+  } catch (error) {
+    console.error("❌ Lỗi khi xóa hạn mức tháng khỏi SQLite:", error);
+    throw error;
+  }
+};
+
+
 
 export const getAllCategoriesFromLocal = async (): Promise<Category[]> => {
   try {

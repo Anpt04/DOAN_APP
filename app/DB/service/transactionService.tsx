@@ -76,6 +76,13 @@ export const getMonthlyLimits = async (month: string): Promise<number | null> =>
   }
 };
 
+export const deleteMonthlyLimits = async (month: string) => {
+  if (auth.currentUser) {
+    await CloudService.deleteMonthlyLimitFromCloud(month);
+  } else {
+    await LocalService.deleteMonthlyLimitFromLocal(month);
+  }
+};
 
 export default {
   addTransaction,

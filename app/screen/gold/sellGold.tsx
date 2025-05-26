@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 18,
-    color: "#2d6a4f",
+    color: "#4caf50",
     marginVertical: 3,
   },
   pickerContainer: {
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    backgroundColor: "#2d6a4f",
+    backgroundColor: "#4caf50",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
