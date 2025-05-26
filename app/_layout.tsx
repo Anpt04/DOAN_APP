@@ -45,10 +45,14 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="Auth/Login" options={{ headerShown: true, title: 'Đăng nhập', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="Auth/ForgotPassword" options={{ headerShown: true, title: 'Quên mật khẩu', headerTitleAlign: 'center' }} />
         <Stack.Screen name="Auth/Register" options={{ headerShown: true, title: 'Đăng ký', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="Auth/changePassword" options={{ headerShown: true, title: '', headerTitleAlign: 'center' }} />
+
         <Stack.Screen name="screen/editCategory" options={{ headerShown: true, title: 'Thêm mới danh mục', headerTitleAlign: 'center' }} />
         <Stack.Screen name="screen/transaction/editTransactionScreen" options={{ headerShown: true, title: 'Chỉnh sửa giao dịch', headerTitleAlign: 'center' }} />
         <Stack.Screen name="screen/reportTransaction/reportDetail" options={{ headerShown: true, title: 'Chi tiết', headerTitleAlign: 'center' }} />
+        <Stack.Screen name="screen/setMonthlyLimitScreen" options={{ headerShown: true, title: 'Hạn mức chi tiêu', headerTitleAlign: 'center' }} />
 
         <Stack.Screen name="+not-found" />
       </Stack>

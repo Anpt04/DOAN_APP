@@ -40,7 +40,7 @@ export default function HomeScreen() {
       {!user && (
         <Link href="../Auth/Login" asChild>
           <TouchableOpacity style={styles.loginButton}>
-            <Text style={styles.buttonText}>Đi đến Login</Text>
+            <Text style={styles.buttonText}>Đi đến đăng nhập</Text>
           </TouchableOpacity>
         </Link>
       )}
@@ -49,7 +49,7 @@ export default function HomeScreen() {
       {!user && (
         <Link href="../Auth/Register" asChild>
         <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.buttonText}>Đi đến Register</Text>
+          <Text style={styles.buttonText}>Đi đến đăng ký</Text>
         </TouchableOpacity>
       </Link>
       )}
@@ -57,10 +57,19 @@ export default function HomeScreen() {
 
       {/* Nút Đăng xuất (hiển thị khi đã đăng nhập) */}
       {user && (
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Đăng xuất</Text>
-        </TouchableOpacity>
+        <>
+          <Link href="../Auth/changePassword" asChild>
+            <TouchableOpacity style={styles.loginButton}>
+              <Text style={styles.buttonText}>Đổi mật khẩu</Text>
+            </TouchableOpacity>
+          </Link>
+
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Đăng xuất</Text>
+          </TouchableOpacity>
+        </>
       )}
+
     </View>
   );
 }

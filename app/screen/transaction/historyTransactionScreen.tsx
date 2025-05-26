@@ -6,6 +6,7 @@ import { Calendar } from 'react-native-calendars';
 import { getTransactions, getMonthlyLimits } from '../../DB/service/transactionService'; // Thêm hàm getMonthlyLimits
 
 export function HistoryTransactionScreen() {
+
   const formatLocalDate = (date: Date): string => {
     const year = date.getFullYear();
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -20,19 +21,6 @@ export function HistoryTransactionScreen() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [monthlyLimit, setMonthlyLimit] = useState<number | null>(null); // Thêm trạng thái cho hạn mức
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchData = async () => {
-        const data = await getTransactions();
-        setTransactions(data);
-
-        // Lấy hạn mức chi tiêu từ cơ sở dữ liệu
-        const limit = await getMonthlyLimits(selectedDate.slice(0, 7)); // Lấy hạn mức của tháng hiện tại
-        setMonthlyLimit(limit);
-      };
-      fetchData();
-    }, [selectedDate]) // Cập nhật khi selectedDate thay đổi
-  );
 
   // Tính tổng tiền thu và chi theo ngày
   const filteredTransactions = transactions.filter((t) => {
@@ -76,16 +64,42 @@ export function HistoryTransactionScreen() {
 
   const currentMonth = selectedDate.slice(0, 7); // Lấy phần năm-tháng từ selectedDate
   const { totalIncomeForMonth, totalExpenseForMonth, totalForMonth } = getTotalIncomeAndExpenseForMonth(transactions, currentMonth);
+  const formattedMonth = currentMonth.split("-").reverse().join("-");
 
   // Kiểm tra và hiển thị thông báo khi chi tiêu gần đạt hạn mức
-  React.useEffect(() => {
-    if (monthlyLimit !== null && totalExpenseForMonth >= monthlyLimit * 0.9) {
-      Alert.alert(
-        "Thông báo",
-        `Chi tiêu của bạn trong tháng này đã gần đạt hạn mức (${totalExpenseForMonth.toLocaleString()}₫ / ${monthlyLimit.toLocaleString()}₫).`
-      );
-    }
-  }, [monthlyLimit, totalExpenseForMonth]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        setMonthlyLimit(null); // reset ngay khi tháng thay đổi
+  
+        const data = await getTransactions();
+        setTransactions(data);
+  
+        const limit = await getMonthlyLimits(selectedDate.slice(0, 7));
+        setMonthlyLimit(limit);
+  
+        console.log("Hạn mức chi tiêu tháng này:", limit);
+        console.log("Ngày hiện tại:", selectedDate);
+        console.log(formattedMonth)
+        // Kiểm tra luôn trong callback
+        if (limit !== null && totalExpenseForMonth >= limit * 0.9 && totalExpenseForMonth < limit) {
+          Alert.alert(
+            "Thông báo",
+            `Chi tiêu của bạn trong tháng ${formattedMonth} đã gần đạt hạn mức (${totalExpenseForMonth.toLocaleString()}₫ / ${limit.toLocaleString()}₫).`
+          );
+        }
+        else if (limit !== null && totalExpenseForMonth > limit) {
+          Alert.alert(
+            "Thông báo",
+            `Chi tiêu của bạn trong tháng ${formattedMonth} đã vượt quá hạn mức (${totalExpenseForMonth.toLocaleString()}₫ / ${limit.toLocaleString()}₫).`
+          );
+        }
+      };
+  
+      fetchData();
+    }, [selectedDate, totalExpenseForMonth])
+  );
+  
 
   return (
     <View style={styles.container}>
@@ -100,13 +114,14 @@ export function HistoryTransactionScreen() {
             setSelectedDate(newSelectedDate);
           }}
           markedDates={{
-            [selectedDate]: { selected: true, marked: true, selectedColor: '#f06292' },
+            [selectedDate]: { selected: true, marked: true, selectedColor: 'rgb(124, 124, 124)' },
           }}
           theme={{
-            calendarBackground: 'rgb(83, 119, 173)',
-            dayTextColor: '#fff',
-            monthTextColor: '#fff',
-            arrowColor: '#f06292',
+            calendarBackground: 'rgb(255, 255, 255)',
+            dayTextColor: '#rgb(0, 0, 0)',
+            monthTextColor: '#rgb(0, 0, 0)',
+            arrowColor: '#rgb(0, 0, 0)',
+            
           }}
         />
       </View>
@@ -115,23 +130,23 @@ export function HistoryTransactionScreen() {
       <View style={styles.summaryMonthContainer}>
         <View style={styles.summaryMonth}>
           <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={[styles.summaryTextMonth, { color: 'skyblue' }]}>Thu:  {totalIncomeForMonth.toLocaleString()}đ</Text>
+            <Text style={[styles.summaryTextMonth, { color: 'rgb(24, 39, 245)' }]}>Thu:  {totalIncomeForMonth.toLocaleString()}đ</Text>
           </View>
           <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={[styles.summaryTextMonth, { color: 'orange' }]}>Chi: {totalExpenseForMonth.toLocaleString()}đ</Text>
+            <Text style={[styles.summaryTextMonth, { color: 'rgb(245, 30, 30)' }]}>Chi: {totalExpenseForMonth.toLocaleString()}đ</Text>
           </View>
         </View>
 
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={[styles.summaryTextMonth, { color: 'white' }]}>Tổng: {totalForMonth.toLocaleString()}đ</Text>
+          <Text style={[styles.summaryTextMonth, { color: 'black' }]}>Tổng: {totalForMonth.toLocaleString()}đ</Text>
         </View>
       </View>
 
       {/* Tổng tiền thu và chi theo ngày */}
       <View style={styles.summary}>
-        <Text style={[styles.summaryText, { color: 'skyblue' }]}>Tiền thu ngày: {totalIncome.toLocaleString()}đ</Text>
-        <Text style={[styles.summaryText, { color: 'orange' }]}>Tiền chi ngày: {totalExpense.toLocaleString()}đ</Text>
-        <Text style={[styles.summaryText, { color: 'white' }]}>Tổng ngày: {(totalIncome - totalExpense).toLocaleString()}đ</Text>
+        <Text style={[styles.summaryText, { color: 'rgb(24, 39, 245)' }]}>Tiền thu ngày: {totalIncome.toLocaleString()}đ</Text>
+        <Text style={[styles.summaryText, { color: 'rgb(245, 30, 30)' }]}>Tiền chi ngày: {totalExpense.toLocaleString()}đ</Text>
+        <Text style={[styles.summaryText, { color: 'black' }]}>Tổng ngày: {(totalIncome - totalExpense).toLocaleString()}đ</Text>
       </View>
       
       <ScrollView contentContainerStyle={styles.scrollContainer}> 
@@ -149,7 +164,7 @@ export function HistoryTransactionScreen() {
               router.push({ pathname: '/screen/transaction/editTransactionScreen', params: { id: item.id } })}}>
               <View style={styles.item}>
                 <Text style={styles.itemText}>{item.categoryName}</Text>
-                <Text style={[styles.itemAmount, { color: item.type === 'income' ? 'skyblue' : 'orange' }]}>
+                <Text style={[styles.itemAmount, { color: item.type === 'income' ? 'rgb(24, 39, 245)' : 'rgb(245, 30, 30)' }]}>
                   {item.amount.toLocaleString()}đ
                 </Text>
               </View>
@@ -168,14 +183,14 @@ export function HistoryTransactionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgb(117, 117, 117)',
+    backgroundColor: 'rgb(240, 240, 240)',
     paddingTop: 20,
     paddingHorizontal: 10,
   },
   scrollContainer: {
     width: '100%',
     padding: 10,
-    backgroundColor: 'rgb(117, 117, 117)',
+    backgroundColor: 'rgb(240, 240, 240)',
     flexGrow: 1,
     borderRadius: 10,
   },
@@ -192,7 +207,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgb(32, 32, 32)',
+    backgroundColor: 'rgb(255, 255, 255)',
     borderRadius: 10,
     marginBottom:15,
     padding: 3,
@@ -204,7 +219,7 @@ const styles = StyleSheet.create({
   summary: {
     marginBottom: 15,
     padding: 10,
-    backgroundColor: '#222',
+    backgroundColor: '#rgb(255, 255, 255)',
     borderRadius: 10,
   },
   summaryText: {
@@ -214,13 +229,13 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#222',
+    backgroundColor: 'rgb(255, 255, 255)',
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
   },
   itemText: {
-    color: '#fff',
+    color: '#rgb(0, 0, 0)',
     fontSize: 16,
   },
   itemAmount: {
@@ -229,4 +244,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HistoryTransactionScreen;
+export default HistoryTransactionScreen; 

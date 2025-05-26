@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from "expo-router";
 import { Feather } from '@expo/vector-icons';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, setDoc, doc } from 'firebase/firestore';
 import firebaseConfig from '../DB/firebase/firebaseConfig';
-import { copyDefaultCategoriesToUser } from '../DB/firebase/firebaseService';
 import { initializeApp } from 'firebase/app';
+import { copyDefaultCategoriesToUser } from '../DB/firebase/firebaseService';
+
 
 const app = initializeApp(firebaseConfig);
-
 const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,37 +21,48 @@ const SignUpScreen = () => {
   const auth = getAuth();
   const db = getFirestore();
 
-  const handleSignUp = async () => {
-    if (!email || !password || !name) {
-      alert('Please fill in all fields');
-      return;
-    }
+const handleSignUp = async () => {
+  if (!email || !password || !name) {
+    Alert.alert("Lỗi", 'Vui lòng điền đầy đủ thông tin.');
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
+  if (!isValidEmail(email)) {
+    Alert.alert("Lỗi", "Vui lòng nhập địa chỉ email hợp lệ.");
+    return;
+  }
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  if (password !== confirmPassword) {
+    Alert.alert("Lỗi", 'Mật khẩu không khớp. Vui lòng kiểm tra lại.');
+    return;
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      await copyDefaultCategoriesToUser(user.uid);
+
       await setDoc(doc(db, 'users', user.uid), {
         name,
-        email: user.email,
-        password,
+        email,
         createdAt: new Date(),
       });
 
-      await copyDefaultCategoriesToUser(user.uid);
+      signOut(auth);
 
-      alert('Đăng ký thành công!');
-      router.replace("./Login");
-    } catch (error) {
-      console.error(error);
-      alert('Đã có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.');
-    }
-  };
+    Alert.alert("Thành công", "Đăng ký thành công, bạn có thể đăng nhập.");
+    router.replace("/Auth/Login");
 
+  } catch (error) {
+    console.log("Lỗi đăng ký:", error);
+    Alert.alert("Lỗi", "Đã có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.");
+  }
+};
+
+  const isValidEmail = (email: string): boolean => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
   return (
     <View style={styles.container}>
       <Image 

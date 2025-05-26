@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from "expo-router";
 import { Feather } from '@expo/vector-icons'; 
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../DB/firebase/firebaseConfig';
 import { useCategories } from "../contexts/categoryContext";
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../DB/firebase/firebaseConfig';
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,14 +17,13 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      alert('Vui lòng nhập đầy đủ email và mật khẩu.');
+      Alert.alert('Lỗi','Vui lòng nhập đầy đủ email và mật khẩu.');
       return;
     }
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
       const catRef = collection(db, "users", user.uid, "categories");
       const snapshot = await getDocs(catRef);
       const catList = snapshot.docs.map((doc) => ({
@@ -33,12 +33,13 @@ export default function Login() {
       }));
       setCategories(catList);
 
-      alert('Đăng nhập thành công!');
+      Alert.alert('Thành công','Đăng nhập thành công!');
       router.replace('/');
     } catch (error: any) {
-      alert('Đăng nhập thất bại');
+      Alert.alert('Thất bại','Đăng nhập thất bại');
     }
   };
+
 
   return (
     <View style={styles.container}>
@@ -84,6 +85,9 @@ export default function Login() {
 
       <TouchableOpacity onPress={() => router.push("/Auth/Register")}>
         <Text style={styles.link}>Chưa có tài khoản? Đăng ký</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/Auth/ForgotPassword")}>
+        <Text style={styles.link}>Quên mật khẩu ?</Text>
       </TouchableOpacity>
     </View>
   );
