@@ -7,7 +7,8 @@ import { getFirestore, setDoc, doc } from 'firebase/firestore';
 import firebaseConfig from '../DB/firebase/firebaseConfig';
 import { initializeApp } from 'firebase/app';
 import { copyDefaultCategoriesToUser } from '../DB/firebase/firebaseService';
-
+import { getTransactionsFromLocal, getAllCategoriesFromLocal } from '../DB/LocalDB/localService';
+import { uploadCategoryToFirebase, uploadTransactionToFirebase } from '../DB/firebase/firebaseService';
 
 const app = initializeApp(firebaseConfig);
 const SignUpScreen = () => {
@@ -38,25 +39,57 @@ const handleSignUp = async () => {
   }
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      await copyDefaultCategoriesToUser(user.uid);
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+  // Tạo user trên Firestore
+  await setDoc(doc(db, 'users', user.uid), {
+    name,
+    email: user.email,
+    createdAt: new Date(),
+  });
+  // ✅ Hỏi người dùng có muốn đồng bộ local không
+  Alert.alert(
+    "Đồng bộ dữ liệu",
+    "Bạn có muốn tải dữ liệu hiện tại đang lưu trên máy lên tài khoản cloud không?",
+    [
+      {
+        text: "Không",
+        style: "cancel",
+        onPress: () => {
+          copyDefaultCategoriesToUser(user.uid)
+          Alert.alert("Thành công", "Đăng ký thành công.");
+          signOut(auth);
+          router.replace("/Auth/Login");
+        }
+      },
+      {
+        text: "Có",
+        onPress: async () => {
+          // Lấy dữ liệu local
+          const localTransactions = await getTransactionsFromLocal();
+          const localCategories = await getAllCategoriesFromLocal();
 
-      await setDoc(doc(db, 'users', user.uid), {
-        name,
-        email,
-        createdAt: new Date(),
-      });
+          // Ghi danh mục lên Firestore
+          for (const cat of localCategories) {
+            await uploadCategoryToFirebase(cat, user.uid);
+          }
 
-      signOut(auth);
+          // Ghi giao dịch lên Firestore
+          for (const tx of localTransactions) {
+            await uploadTransactionToFirebase(tx, user.uid);
+          }
+          Alert.alert("Thành công", "Đăng ký và đồng bộ dữ liệu thành công.");
+          signOut(auth);
+          router.replace("/Auth/Login");
+        }
+      }
+    ]
+  );
 
-    Alert.alert("Thành công", "Đăng ký thành công, bạn có thể đăng nhập.");
-    router.replace("/Auth/Login");
-
-  } catch (error) {
-    console.log("Lỗi đăng ký:", error);
-    Alert.alert("Lỗi", "Đã có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.");
-  }
+} catch (error: any) {
+  console.log("Lỗi đăng ký:", error);
+  Alert.alert("Lỗi", "Đã có lỗi xảy ra trong quá trình đăng ký.\n" + error.message);
+}
 };
 
   const isValidEmail = (email: string): boolean => {

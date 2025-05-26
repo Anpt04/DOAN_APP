@@ -23,15 +23,17 @@ const AddTransactionScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      if (categories.length > 0) {
-        setCategory(categories[2].id);
-      }
-    } else {
-      setCategory(categories[0].id);
-    }
-  }, [categories]);
+  // Lọc danh mục loại expense
+  const expenseList = categories.filter(cat => cat.type === "expense");
+
+  if (expenseList.length === 0) {
+    // Không có danh mục expense thì không set gì cả
+    return;
+  } else {
+    setCategory(expenseList[0].id);
+  }
+}, [categories]);
+
 
   const handleAdd = async () => {
     if (amount === 0 || isNaN(amount)) {
