@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import { db, auth } from "./firebaseConfig";
 import {
   collection,
@@ -117,21 +118,21 @@ export const deleteTransactionFromCloud = async (id: string) => {
 };
 
 export const addCategoryToCloud = async (
-  category: { name: string; type: string }
+  category: {id : string ; name: string; type: string }
 ): Promise<Category> => {
   const user = auth.currentUser;
   if (!user) throw new Error("Người dùng chưa đăng nhập");
 
   try {
     const docRef = await addDoc(collection(db, "users", user.uid, "categories"), category);
-    alert("Thêm danh mục thành công!");
+    Alert.alert('Thành công',"Thêm danh mục thành công!");
     return {
       id: docRef.id,
       name: category.name,
       type: category.type as "income" | "expense", 
     };
-  } catch (error) {
-    alert("Lỗi khi thêm danh mục");
+  } catch (error : any) {
+    Alert.alert('Lỗi',"Lỗi khi thêm danh mục", error.message);
     throw error;
   }
 };
@@ -144,9 +145,9 @@ export const updateCategoryToCloud = async (id: string, updatedData: { name?: st
   try {
     const docRef = doc(db, "users", user.uid, "categories", id);
     await updateDoc(docRef, updatedData);
-    alert("Cập nhật danh mục thành công!");
-  } catch (error) {
-    alert("Lỗi khi cập nhật danh mục");
+    Alert.alert('Thành công',"Cập nhật danh mục thành công!");
+  } catch (error : any) {
+    Alert.alert('Lỗi',"Lỗi khi cập nhật danh mục", error.message);
     throw error;
   }
 };
@@ -157,10 +158,10 @@ export const deleteCategoryFromCloud = async (id: string) => {
 
   try {
     const docRef = doc(db, "users", user.uid, "categories", id);
-    alert("Xóa danh mục thành công!");
+    Alert.alert('Thành công',"Xóa danh mục thành công!");
     await deleteDoc(docRef);
-  } catch (error) {
-    alert("Lỗi khi xóa danh mục");
+  } catch (error : any) {
+    Alert.alert('Lỗi',"Lỗi khi xóa danh mục", error.message);
     throw error;
   }
 };
@@ -176,9 +177,10 @@ export const setMonthlyLimitToCloud = async (
     const docRef = doc(db, "users", user.uid, "MonthlyLimit", month);
     await setDoc(docRef, { amountLimit }, { merge: true });
 
-    alert("Thiết lập hạn mức chi tiêu thành công!");
-  } catch (error) {
+    Alert.alert('Thành công',"Thiết lập hạn mức chi tiêu thành công!");
+  } catch (error : any) {
     console.error("❌ Lỗi khi thiết lập hạn mức chi tiêu lên Firestore:", error);
+    Alert.alert('Lỗi',"Lỗi khi thiết lập hạn mức chi tiêu", error.message);
     throw error;
   }
 };

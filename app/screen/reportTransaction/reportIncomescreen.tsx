@@ -9,7 +9,7 @@ import { PieChart } from 'react-native-chart-kit';
 import { getTransactions, Transaction } from '../../DB/service/transactionService';
 import { router } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useTheme } from '../../contexts/themeContext'; // ✅ Sử dụng theme context
+import { useTheme } from '../../contexts/themeContext'; 
 
 const screenWidth = Dimensions.get('window').width - 40;
 

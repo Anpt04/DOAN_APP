@@ -23,15 +23,18 @@ export default function ReportDetailScreen() {
       const allTx = await getTransactionsByCategory(id);
 
       const totalsByMonth: Record<string, number> = {};
+
       allTx.forEach(tx => {
         const ym = tx.date.slice(0, 7);
         totalsByMonth[ym] = (totalsByMonth[ym] || 0) + tx.amount;
       });
+      
       const year = month ? parseInt(month.split("-")[0], 10) : new Date().getFullYear();
       let monthNums: number[] = [];
       if (currentMonth <= 4) monthNums = [1, 2, 3, 4];
       else if (currentMonth <= 8) monthNums = [5, 6, 7, 8];
       else monthNums = [9, 10, 11, 12];
+
       setDataPerMonth(
         monthNums.map(m => {
           const mm = String(m).padStart(2, "0");
@@ -49,9 +52,24 @@ export default function ReportDetailScreen() {
   }, [id, month]);
 
   const styles = useMemo(() => StyleSheet.create({
-    container: { flex: 1, padding: 10, backgroundColor: theme.colors.background },
-    title: { fontSize: 18, fontWeight: "bold", marginBottom: 12, color: theme.colors.text },
-    subTitle: { fontSize: 16, fontWeight: "600", marginTop: 20, marginBottom: 8, color: theme.colors.text },
+    container: { 
+      flex: 1, 
+      padding: 10, 
+      backgroundColor: theme.colors.background 
+    },
+    title: { 
+      fontSize: 18, 
+      fontWeight: "bold", 
+      marginBottom: 12, 
+      color: theme.colors.text 
+    },
+    subTitle: { 
+      fontSize: 16, 
+      fontWeight: "600", 
+      marginTop: 20, 
+      marginBottom: 8, 
+      color: theme.colors.text 
+    },
     txItem: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -64,10 +82,26 @@ export default function ReportDetailScreen() {
       flexDirection: "row",
       alignItems: "center",
     },
-    txDate: { fontSize: 14, color: theme.colors.text },
-    txName: { fontSize: 16, fontWeight: "500", marginLeft: 8, color: theme.colors.text },
-    txAmount: { fontSize: 14, fontWeight: "500", color: theme.colors.text },
-    noData: { textAlign: "center", color: theme.colors.placeholder, marginTop: 10 },
+    txDate: { 
+      fontSize: 14, 
+      color: theme.colors.text 
+    },
+    txName: { 
+      fontSize: 16, 
+      fontWeight: "500", 
+      marginLeft: 8, 
+      color: theme.colors.text 
+    },
+    txAmount: { 
+      fontSize: 14, 
+      fontWeight: "500", 
+      color: theme.colors.text 
+    },
+    noData: { 
+      textAlign: "center", 
+      color: theme.colors.placeholder, 
+      marginTop: 10 
+    },
   }), [theme]);
 
   return (

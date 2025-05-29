@@ -17,11 +17,11 @@ import { useTheme } from "../contexts/themeContext";
 const CategoryManagerScreen = () => {
   const { categories, setCategories } = useCategories();
   const { theme } = useTheme();
-
   const [categoryName, setCategoryName] = useState("");
   const [categoryType, setCategoryType] = useState("income");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
+  const filteredCategories = categories.filter(cat => cat.type === categoryType);
+  
   useEffect(() => {
     const fetchCategories = async () => {
       const allCategories = await categoryService.getAllCategories();
@@ -109,7 +109,7 @@ const CategoryManagerScreen = () => {
       ]}
     >
       <Text style={[styles.categoryText, { color: theme.colors.text }]}>
-        {item.name} - {item.type}
+        {item.name} 
       </Text>
       <View style={styles.categoryActions}>
         <TouchableOpacity
@@ -173,6 +173,7 @@ const CategoryManagerScreen = () => {
                 categoryType === "income"
                   ? theme.colors.textButton
                   : theme.colors.text,
+              fontWeight: categoryType === "income" ? "bold" : "normal",
             }}
           >
             Thu nhập
@@ -197,19 +198,22 @@ const CategoryManagerScreen = () => {
                 categoryType === "expense"
                   ? theme.colors.textButton
                   : theme.colors.text,
-            }}
+                  fontWeight: categoryType === "expense" ? "bold" : "normal",}}
           >
             Chi tiêu
           </Text>
         </TouchableOpacity>
       </View>
 
-
-      <Button
-        title={editingCategory ? "Cập nhật" : "Thêm"}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.primary }]}
         onPress={editingCategory ? handleUpdateCategory : handleAddCategory}
-        color={theme.colors.primary}
-      />
+      >
+        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>
+          {editingCategory ? "Cập nhật" : "Thêm"}
+        </Text>
+      </TouchableOpacity>
+
 
       <Text
         style={[
@@ -219,9 +223,9 @@ const CategoryManagerScreen = () => {
       >
         Danh sách danh mục
       </Text>
-
+        
       <FlatList
-        data={categories}
+        data={filteredCategories}
         renderItem={renderCategoryItem}
         keyExtractor={(item) => item.id}
       />
@@ -237,6 +241,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     marginBottom: 20,
+  },
+  button: {
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,
