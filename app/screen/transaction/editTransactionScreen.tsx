@@ -6,17 +6,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as transactionService from "../../DB/service/transactionService";
 import { useCategories } from "../../contexts/categoryContext";
+import { useTheme } from "../../contexts/themeContext";
 
 const EditTransactionScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { categories } = useCategories();
+  const { theme } = useTheme();
 
   const [amount, setAmount] = useState<number>(0);
   const [note, setNote] = useState<string>("");
@@ -58,10 +59,7 @@ const EditTransactionScreen = () => {
 
     await transactionService.updateTransaction(id, updated);
     Alert.alert("Thành công", "Cập nhật thành công!", [
-      {
-        text: "OK",
-        onPress: () => router.back(),
-      },
+      { text: "OK", onPress: () => router.back() },
     ]);
   };
 
@@ -74,10 +72,7 @@ const EditTransactionScreen = () => {
         onPress: async () => {
           await transactionService.deleteTransaction(id);
           Alert.alert("Thành công", "Đã xóa giao dịch!", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
+            { text: "OK", onPress: () => router.back() },
           ]);
         },
       },
@@ -92,11 +87,16 @@ const EditTransactionScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Chỉnh sửa giao dịch</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Chỉnh sửa giao dịch</Text>
 
-      <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
-        <Text style={styles.dateText}>📅 {date.toLocaleDateString("vi-VN")}</Text>
+      <TouchableOpacity
+        style={[styles.dateButton, { backgroundColor: theme.colors.inputBackground }]}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={[styles.dateText, { color: theme.colors.text }]}>
+          📅 {date.toLocaleDateString("vi-VN")}
+        </Text>
       </TouchableOpacity>
 
       {showDatePicker && (
@@ -110,30 +110,26 @@ const EditTransactionScreen = () => {
 
       <TextInput
         placeholder="Ghi chú"
-        placeholderTextColor="#555"
+        placeholderTextColor={theme.colors.placeholder}
         value={note}
         onChangeText={setNote}
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text }]}
       />
 
       <TextInput
         placeholder="Số tiền"
-        placeholderTextColor="#555"
+        placeholderTextColor={theme.colors.placeholder}
         keyboardType="number-pad"
-        value={
-          amount === 0 || isNaN(amount)
-            ? ""
-            : amount.toLocaleString("en-US")
-        }
+        value={amount === 0 || isNaN(amount) ? "" : amount.toLocaleString("en-US")}
         onChangeText={(text) => {
           const raw = text.replace(/,/g, "");
           const newAmount = parseFloat(raw);
           setAmount(isNaN(newAmount) ? 0 : newAmount);
         }}
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text }]}
       />
 
-      <Text style={styles.label}>Chọn danh mục:</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Chọn danh mục:</Text>
       <View style={styles.categoryList}>
         {categories
           .filter((cat) => cat.type === type)
@@ -142,15 +138,17 @@ const EditTransactionScreen = () => {
               key={cat.id}
               style={[
                 styles.categoryButton,
-                category === cat.id && styles.selectedCategory,
+                {
+                  backgroundColor: category === cat.id ? theme.colors.primary : theme.colors.inputBackground,
+                },
               ]}
               onPress={() => setCategory(cat.id)}
             >
               <Text
-                style={[
-                  styles.categoryText,
-                  category === cat.id && styles.selectedCategoryText,
-                ]}
+                style={{
+                  color: category === cat.id ? theme.colors.textButton : theme.colors.text,
+                  fontWeight: category === cat.id ? "bold" : "normal",
+                }}
               >
                 {cat.name}
               </Text>
@@ -158,12 +156,18 @@ const EditTransactionScreen = () => {
           ))}
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-        <Text style={styles.buttonText}>💾 Lưu chỉnh sửa</Text>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.primary }]}
+        onPress={handleUpdate}
+      >
+        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>💾 Lưu chỉnh sửa</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-        <Text style={styles.deleteButtonText}>🗑️ Xóa giao dịch</Text>
+      <TouchableOpacity
+        style={[styles.deleteButton, { backgroundColor: theme.colors.danger }]}
+        onPress={handleDelete}
+      >
+        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>🗑️ Xóa giao dịch</Text>
       </TouchableOpacity>
     </View>
   );
@@ -176,7 +180,6 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
     padding: 20,
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 24,
@@ -184,21 +187,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   input: {
-    borderWidth: 1,
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
-    color: "#000",
   },
   dateButton: {
     padding: 10,
-    backgroundColor: "#eee",
     borderRadius: 5,
     marginBottom: 10,
   },
   dateText: {
     fontSize: 16,
-    color: "#333",
   },
   label: {
     fontSize: 16,
@@ -212,42 +211,23 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     padding: 10,
-    backgroundColor: "#eee",
     borderRadius: 5,
     marginRight: 10,
     marginBottom: 10,
   },
-  selectedCategory: {
-    backgroundColor: "#4caf50",
-  },
-  categoryText: {
-    color: "#000",
-  },
-  selectedCategoryText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
   button: {
-    backgroundColor: "#4caf50",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  deleteButton: {
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 10,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  deleteButton: {
-    backgroundColor: "#f44336",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  deleteButtonText: {
-    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },

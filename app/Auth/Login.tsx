@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from "expo-router";
 import { Feather } from '@expo/vector-icons'; 
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../DB/firebase/firebaseConfig';
 import { useCategories } from "../contexts/categoryContext";
-import { collection, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../DB/firebase/firebaseConfig';
-
-
+import { useTheme } from '../contexts/themeContext'; 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false); // 👈 thêm state
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const { setCategories } = useCategories();
+
+  const { theme, toggleTheme, isDark } = useTheme(); 
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -40,54 +41,61 @@ export default function Login() {
     }
   };
 
-
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+
       <Image 
         source={require('../../assets/images/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
 
-      <Text style={styles.title}>Đăng Nhập</Text>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Đăng Nhập</Text>
 
       <TextInput
         placeholder="Email"
-        placeholderTextColor="#555"
+        placeholderTextColor={theme.colors.placeholder}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        style={styles.input}
+        style={[styles.input, { 
+          borderColor: theme.colors.border, 
+          backgroundColor: theme.colors.inputBackground,
+          color: theme.colors.text,
+        }]}
       />
 
-      <View style={styles.passwordContainer}>
+      <View style={[styles.passwordContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.inputBackground }]}>
         <TextInput
           placeholder="Mật khẩu"
-          placeholderTextColor="#555"
+          placeholderTextColor={theme.colors.placeholder}
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!isPasswordVisible}
-          style={styles.passwordInput}
+          style={[styles.passwordInput, { color: theme.colors.text }]}
         />
         <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
           <Feather 
             name={isPasswordVisible ? 'eye-off' : 'eye'} 
             size={24} 
-            color="#555" 
+            color={theme.colors.textButton} 
           />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Đăng nhập</Text>
+      <TouchableOpacity 
+        style={[styles.button, { backgroundColor: theme.colors.primary }]} 
+        onPress={handleLogin}
+      >
+        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>Đăng nhập</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/Auth/Register")}>
-        <Text style={styles.link}>Chưa có tài khoản? Đăng ký</Text>
+        <Text style={[styles.link, { color: theme.colors.link }]}>Chưa có tài khoản? Đăng ký</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push("/Auth/ForgotPassword")}>
-        <Text style={styles.link}>Quên mật khẩu ?</Text>
+        <Text style={[styles.link, { color: theme.colors.link }]}>Quên mật khẩu ?</Text>
       </TouchableOpacity>
     </View>
   );
@@ -98,13 +106,13 @@ const styles = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     padding: 20, 
-    backgroundColor: 'rgb(255, 254, 254)'
   },
   logo: {
     width: 150,
     height: 150,
     alignSelf: 'center',
     marginBottom: 5,
+    borderRadius: 75,
   },
   title: { 
     fontSize: 28, 
@@ -115,7 +123,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     padding: 10, 
     borderRadius: 8,
     marginBottom: 15
@@ -124,7 +131,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 15,
@@ -133,26 +139,18 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
   },
-  eyeIcon: {
-    fontSize: 22,
-    marginLeft: 10,
-    color: '#555',
-  },
   button: {
-    backgroundColor: 'blue',
     padding: 10,
     borderRadius: 8,
     marginBottom: 15,
     alignItems: 'center',
   },
   buttonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
   link: { 
     textAlign: "center",
-    color: "blue", 
     marginTop: 10 
   },
 });

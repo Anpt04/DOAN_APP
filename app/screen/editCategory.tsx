@@ -9,13 +9,15 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import { useCategories } from "../contexts/categoryContext"; 
-import * as categoryService from "../DB/service/categoryService";  
+import { useCategories } from "../contexts/categoryContext";
+import * as categoryService from "../DB/service/categoryService";
 import { Category } from "../contexts/categoryContext";
+import { useTheme } from "../contexts/themeContext";
 
 const CategoryManagerScreen = () => {
-  // Sử dụng useCategories để lấy categories và setCategories
   const { categories, setCategories } = useCategories();
+  const { theme } = useTheme();
+
   const [categoryName, setCategoryName] = useState("");
   const [categoryType, setCategoryType] = useState("income");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -23,36 +25,35 @@ const CategoryManagerScreen = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       const allCategories = await categoryService.getAllCategories();
-      setCategories(allCategories);  // Cập nhật categories từ Firebase
+      setCategories(allCategories);
     };
 
-    if (categories.length === 0) { // Chỉ tải lại nếu chưa có danh mục
-        fetchCategories();
-      }
-  }, []);  // Chỉ gọi lần đầu tiên
+    if (categories.length === 0) {
+      fetchCategories();
+    }
+  }, []);
 
   const handleAddCategory = async () => {
     if (!categoryName) {
       Alert.alert("Lỗi", "Vui lòng nhập tên danh mục");
       return;
     }
-  
+
     const newCategory = {
       name: categoryName,
       type: categoryType as "income" | "expense",
     };
-  
+
     try {
-      const savedCategory = await categoryService.addCategory(newCategory); // ✅ nhận đúng dữ liệu từ Firebase
+      const savedCategory = await categoryService.addCategory(newCategory);
       if (savedCategory) {
-        setCategories([...categories, savedCategory]);     
-        setCategoryName("");                                // ✅ reset form
+        setCategories([...categories, savedCategory]);
+        setCategoryName("");
       }
     } catch (error) {
       console.error("Error adding category:", error);
     }
   };
-  
 
   const handleUpdateCategory = async () => {
     if (!categoryName) {
@@ -67,7 +68,7 @@ const CategoryManagerScreen = () => {
 
     const updatedCategory = {
       name: categoryName,
-      type: categoryType as "income" | "expense",  // Ép kiểu nếu cần
+      type: categoryType as "income" | "expense",
     };
 
     try {
@@ -75,9 +76,9 @@ const CategoryManagerScreen = () => {
       const updatedCategories = categories.map((cat) =>
         cat.id === editingCategory.id ? { ...cat, ...updatedCategory } : cat
       );
-      setCategories(updatedCategories);  // Cập nhật danh mục đã sửa
-      setCategoryName("");  // Reset form
-      setEditingCategory(null);  // Xóa trạng thái chỉnh sửa
+      setCategories(updatedCategories);
+      setCategoryName("");
+      setEditingCategory(null);
     } catch (error) {
       console.error("Error updating category:", error);
     }
@@ -91,7 +92,7 @@ const CategoryManagerScreen = () => {
         onPress: async () => {
           try {
             await categoryService.deleteCategory(id);
-            setCategories(categories.filter((cat) => cat.id !== id));  // Cập nhật lại danh sách sau khi xóa
+            setCategories(categories.filter((cat) => cat.id !== id));
           } catch (error) {
             console.error("Error deleting category:", error);
           }
@@ -100,57 +101,125 @@ const CategoryManagerScreen = () => {
     ]);
   };
 
-  const renderCategoryItem = ({ item }: { item: any }) => (
-    <View style={styles.categoryItem}>
-      <Text style={styles.categoryText}>{item.name} - {item.type}</Text>
+  const renderCategoryItem = ({ item }: { item: Category }) => (
+    <View
+      style={[
+        styles.categoryItem,
+        { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
+      ]}
+    >
+      <Text style={[styles.categoryText, { color: theme.colors.text }]}>
+        {item.name} - {item.type}
+      </Text>
       <View style={styles.categoryActions}>
-        <TouchableOpacity onPress={() => {
-          setEditingCategory(item);
-          setCategoryName(item.name);
-          setCategoryType(item.type);
-        }}>
-          <Text style={styles.actionText}>Sửa</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setEditingCategory(item);
+            setCategoryName(item.name);
+            setCategoryType(item.type);
+          }}
+        >
+          <Text style={[styles.actionText, { color: theme.colors.primary }]}>Sửa</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handleDeleteCategory(item.id)}>
-          <Text style={styles.actionText}>Xóa</Text>
+          <Text style={[styles.actionText, { color: theme.colors.danger }]}>Xóa</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{editingCategory ? "Sửa danh mục" : "Thêm danh mục"}</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text
+        style={[
+          styles.title,
+          { color: theme.colors.text, fontFamily: 'bold' },
+        ]}
+      >
+        {editingCategory ? "Sửa danh mục" : "Thêm danh mục"}
+      </Text>
 
       <TextInput
         placeholder="Tên danh mục"
+        placeholderTextColor={theme.colors.placeholder}
         value={categoryName}
         onChangeText={setCategoryName}
-        style={styles.input}
-        keyboardType="default" 
-        autoCorrect={false} 
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.colors.inputBackground,
+            color: theme.colors.text,
+            borderColor: theme.colors.border,
+          },
+        ]}
       />
+
       <View style={styles.typeSelector}>
         <TouchableOpacity
-          style={[styles.typeButton, categoryType === "income" && styles.selectedButton]}
+          style={[
+            styles.typeButton,
+            {
+              backgroundColor:
+                categoryType === "income"
+                  ? theme.colors.primary
+                  : theme.colors.inputBackground,
+            },
+          ]}
           onPress={() => setCategoryType("income")}
         >
-          <Text style={styles.buttonText}>Thu nhập</Text>
+          <Text
+            style={{
+              color:
+                categoryType === "income"
+                  ? theme.colors.textButton
+                  : theme.colors.text,
+            }}
+          >
+            Thu nhập
+          </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={[styles.typeButton, categoryType === "expense" && styles.selectedButton]}
+          style={[
+            styles.typeButton,
+            {
+              backgroundColor:
+                categoryType === "expense"
+                  ? theme.colors.primary
+                  : theme.colors.inputBackground,
+            },
+          ]}
           onPress={() => setCategoryType("expense")}
-        >
-          <Text style={styles.buttonText}>Chi tiêu</Text>
+          >
+          <Text
+            style={{
+              color:
+                categoryType === "expense"
+                  ? theme.colors.textButton
+                  : theme.colors.text,
+            }}
+          >
+            Chi tiêu
+          </Text>
         </TouchableOpacity>
       </View>
+
 
       <Button
         title={editingCategory ? "Cập nhật" : "Thêm"}
         onPress={editingCategory ? handleUpdateCategory : handleAddCategory}
+        color={theme.colors.primary}
       />
 
-      <Text style={styles.subtitle}>Danh sách danh mục</Text>
+      <Text
+        style={[
+          styles.subtitle,
+          { color: theme.colors.text, fontFamily: 'bold' },
+        ]}
+      >
+        Danh sách danh mục
+      </Text>
+
       <FlatList
         data={categories}
         renderItem={renderCategoryItem}
@@ -161,65 +230,53 @@ const CategoryManagerScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      padding: 20,
-      backgroundColor: "#fff",
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: "bold",
-      marginBottom: 20,
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: "#ccc",
-      padding: 10,
-      marginBottom: 10,
-      borderRadius: 5,
-    },
-    typeSelector: {
-      flexDirection: "row",
-      marginBottom: 10,
-    },
-    typeButton: {
-      flex: 1,
-      padding: 10,
-      backgroundColor: "#eee",
-      borderRadius: 5,
-      alignItems: "center",
-      margin: 5,
-    },
-    selectedButton: {
-      backgroundColor: "#4caf50",
-    },
-    buttonText: {
-      color: "#000",
-    },
-    categoryItem: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      padding: 15,
-      backgroundColor: "#f5f5f5",
-      marginBottom: 10,
-      borderRadius: 5,
-    },
-    categoryText: {
-      fontSize: 16,
-    },
-    categoryActions: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    actionText: {
-      marginLeft: 10,
-      color: "red",
-    },
-    subtitle: {
-      fontSize: 18,
-      fontWeight: "bold",
-      marginVertical: 20,
-    },
-  });
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  typeSelector: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  typeButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    margin: 5,
+  },
+  categoryItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+  },
+  categoryText: {
+    fontSize: 16,
+  },
+  categoryActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  actionText: {
+    marginLeft: 10,
+  },
+  subtitle: {
+    fontSize: 18,
+    marginVertical: 20,
+  },
+});
 
 export default CategoryManagerScreen;

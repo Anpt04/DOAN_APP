@@ -13,9 +13,12 @@ import { auth } from "../../DB/firebase/firebaseConfig";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { addTransaction } from "../../DB/service/transactionService";
 import { useCategories } from "../../contexts/categoryContext";
+import { useTheme } from "../../contexts/themeContext";
 
 const AddTransactionScreen: React.FC = () => {
   const { categories } = useCategories();
+  const { theme } = useTheme();
+
   const [amount, setAmount] = useState<number>(0);
   const [note, setNote] = useState<string>("");
   const [category, setCategory] = useState("");
@@ -24,10 +27,7 @@ const AddTransactionScreen: React.FC = () => {
 
   useEffect(() => {
     const incomeList = categories.filter(cat => cat.type === "income");
-  
-    if (incomeList.length === 0) {
-      return;
-    } else {
+    if (incomeList.length > 0) {
       setCategory(incomeList[0].id);
     }
   }, [categories]);
@@ -68,14 +68,14 @@ const AddTransactionScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Thêm khoản thu</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Thêm khoản thu</Text>
 
       <TouchableOpacity
-        style={styles.dateButton}
+        style={[styles.dateButton, { backgroundColor: theme.colors.inputBackground }]}
         onPress={() => setShowDatePicker(true)}
       >
-        <Text style={styles.dateText}>
+        <Text style={[styles.dateText, { color: theme.colors.text }]}>
           📅 {date.toLocaleDateString("vi-VN")}
         </Text>
       </TouchableOpacity>
@@ -91,15 +91,22 @@ const AddTransactionScreen: React.FC = () => {
 
       <TextInput
         placeholder="Ghi chú"
-        placeholderTextColor="#555"
+        placeholderTextColor={theme.colors.placeholder}
         value={note}
         onChangeText={setNote}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.colors.inputBackground,
+            color: theme.colors.text,
+            borderColor: theme.colors.border,
+          },
+        ]}
       />
 
       <TextInput
         placeholder="Số tiền"
-        placeholderTextColor="#555"
+        placeholderTextColor={theme.colors.placeholder}
         keyboardType="number-pad"
         value={
           amount === 0 || isNaN(amount)
@@ -111,10 +118,17 @@ const AddTransactionScreen: React.FC = () => {
           const newAmount = parseFloat(raw);
           setAmount(isNaN(newAmount) ? 0 : newAmount);
         }}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.colors.inputBackground,
+            color: theme.colors.text,
+            borderColor: theme.colors.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>Chọn danh mục:</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Chọn danh mục:</Text>
       <View style={styles.categoryList}>
         {categories
           .filter((cat) => cat.type === "income")
@@ -123,32 +137,47 @@ const AddTransactionScreen: React.FC = () => {
               key={cat.id}
               style={[
                 styles.categoryButton,
-                category === cat.id && styles.selectedCategory,
+                {
+                  backgroundColor:
+                    category === cat.id
+                      ? theme.colors.primary
+                      : theme.colors.inputBackground,
+                },
               ]}
               onPress={() => setCategory(cat.id)}
             >
               <Text
-                style={[
-                  styles.categoryText,
-                  category === cat.id && styles.selectedCategoryText,
-                ]}
+                style={{
+                  color:
+                    category === cat.id
+                      ? theme.colors.textButton
+                      : theme.colors.text,
+                  fontWeight: category === cat.id ? "bold" : "normal",
+                }}
               >
                 {cat.name}
               </Text>
             </TouchableOpacity>
           ))}
+
         <TouchableOpacity
-          style={[styles.categoryButton]}
+          style={[
+            styles.categoryButton,
+            { backgroundColor: theme.colors.inputBackground },
+          ]}
           onPress={() => router.push("/screen/editCategory")}
         >
-          <Text style={[styles.categoryText, { color: "rgb(1,1,1)" }]}>
-            Khác
-          </Text>
+          <Text style={{ color: theme.colors.text }}>Khác</Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleAdd}>
-        <Text style={styles.buttonText}>Thêm giao dịch</Text>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.primary }]}
+        onPress={handleAdd}
+      >
+        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>
+          Thêm giao dịch
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -156,10 +185,8 @@ const AddTransactionScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: "100%",
-    width: "100%",
+    flex: 1,
     padding: 20,
-    backgroundColor: "rgb(255, 255, 255)",
   },
   title: {
     fontSize: 24,
@@ -171,17 +198,14 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
-    color: "rgb(1,1,1)",
   },
   dateButton: {
     padding: 10,
-    backgroundColor: "#eee",
     borderRadius: 5,
     marginBottom: 10,
   },
   dateText: {
     fontSize: 16,
-    color: "#333",
   },
   label: {
     fontSize: 16,
@@ -195,29 +219,16 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     padding: 10,
-    backgroundColor: "#eee",
     borderRadius: 5,
     marginRight: 10,
     marginBottom: 10,
   },
-  selectedCategory: {
-    backgroundColor: "#4caf50",
-  },
-  categoryText: {
-    color: "#000",
-  },
-  selectedCategoryText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
   button: {
-    backgroundColor: "#4caf50",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },

@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { router } from "expo-router";
+import {
+  View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image, useColorScheme,
+} from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, setDoc, doc } from 'firebase/firestore';
-import firebaseConfig from '../DB/firebase/firebaseConfig';
 import { initializeApp } from 'firebase/app';
-import { copyDefaultCategoriesToUser } from '../DB/firebase/firebaseService';
+import * as ImagePicker from 'expo-image-picker';
+
+import firebaseConfig from '../DB/firebase/firebaseConfig';
+import { copyDefaultCategoriesToUser, uploadCategoryToFirebase, uploadTransactionToFirebase } from '../DB/firebase/firebaseService';
 import { getTransactionsFromLocal, getAllCategoriesFromLocal } from '../DB/LocalDB/localService';
-import { uploadCategoryToFirebase, uploadTransactionToFirebase } from '../DB/firebase/firebaseService';
+import { useTheme } from '../contexts/themeContext';
 
 const app = initializeApp(firebaseConfig);
+
 const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,152 +27,153 @@ const SignUpScreen = () => {
   const auth = getAuth();
   const db = getFirestore();
 
-const handleSignUp = async () => {
-  if (!email || !password || !name) {
-    Alert.alert("Lỗi", 'Vui lòng điền đầy đủ thông tin.');
-    return;
-  }
+  const { theme } = useTheme(); // 👈 sử dụng theme
 
-  if (!isValidEmail(email)) {
-    Alert.alert("Lỗi", "Vui lòng nhập địa chỉ email hợp lệ.");
-    return;
-  }
+  const handleSignUp = async () => {
+    if (!email || !password || !name) {
+      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    Alert.alert("Lỗi", 'Mật khẩu không khớp. Vui lòng kiểm tra lại.');
-    return;
-  }
+    if (!isValidEmail(email)) {
+      Alert.alert('Lỗi', 'Vui lòng nhập địa chỉ email hợp lệ.');
+      return;
+    }
 
-  try {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  // Tạo user trên Firestore
-  await setDoc(doc(db, 'users', user.uid), {
-    name,
-    email: user.email,
-    createdAt: new Date(),
-  });
-  // ✅ Hỏi người dùng có muốn đồng bộ local không
-  Alert.alert(
-    "Đồng bộ dữ liệu",
-    "Bạn có muốn tải dữ liệu hiện tại đang lưu trên máy lên tài khoản cloud không?",
-    [
-      {
-        text: "Không",
-        style: "cancel",
-        onPress: () => {
-          copyDefaultCategoriesToUser(user.uid)
-          Alert.alert("Thành công", "Đăng ký thành công.");
-          signOut(auth);
-          router.replace("/Auth/Login");
-        }
-      },
-      {
-        text: "Có",
-        onPress: async () => {
-          // Lấy dữ liệu local
-          const localTransactions = await getTransactionsFromLocal();
-          const localCategories = await getAllCategoriesFromLocal();
+    if (password !== confirmPassword) {
+      Alert.alert('Lỗi', 'Mật khẩu không khớp. Vui lòng kiểm tra lại.');
+      return;
+    }
 
-          // Ghi danh mục lên Firestore
-          for (const cat of localCategories) {
-            await uploadCategoryToFirebase(cat, user.uid);
-          }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-          // Ghi giao dịch lên Firestore
-          for (const tx of localTransactions) {
-            await uploadTransactionToFirebase(tx, user.uid);
-          }
-          Alert.alert("Thành công", "Đăng ký và đồng bộ dữ liệu thành công.");
-          signOut(auth);
-          router.replace("/Auth/Login");
-        }
-      }
-    ]
-  );
+      await setDoc(doc(db, 'users', user.uid), {
+        name,
+        email: user.email,
+        createdAt: new Date(),
+      });
 
-} catch (error: any) {
-  console.log("Lỗi đăng ký:", error);
-  Alert.alert("Lỗi", "Đã có lỗi xảy ra trong quá trình đăng ký.\n" + error.message);
-}
-};
+      Alert.alert(
+        'Đồng bộ dữ liệu',
+        'Bạn có muốn tải dữ liệu hiện tại đang lưu trên máy lên tài khoản cloud không?',
+        [
+          {
+            text: 'Không',
+            style: 'cancel',
+            onPress: () => {
+              copyDefaultCategoriesToUser(user.uid);
+              Alert.alert('Thành công', 'Đăng ký thành công.');
+              signOut(auth);
+              router.replace('/Auth/Login');
+            },
+          },
+          {
+            text: 'Có',
+            onPress: async () => {
+              const localTransactions = await getTransactionsFromLocal();
+              const localCategories = await getAllCategoriesFromLocal();
+
+              for (const cat of localCategories) {
+                await uploadCategoryToFirebase(cat, user.uid);
+              }
+
+              for (const tx of localTransactions) {
+                await uploadTransactionToFirebase(tx, user.uid);
+              }
+
+              Alert.alert('Thành công', 'Đăng ký và đồng bộ dữ liệu thành công.');
+              signOut(auth);
+              router.replace('/Auth/Login');
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      console.log('Lỗi đăng ký:', error);
+      Alert.alert('Lỗi', 'Đã có lỗi xảy ra trong quá trình đăng ký.\n' + error.message);
+    }
+  };
 
   const isValidEmail = (email: string): boolean => {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-};
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   return (
-    <View style={styles.container}>
-      <Image 
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Image
         source={require('../../assets/images/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>Đăng kí</Text>
 
-      <Text style={styles.label}>Email</Text>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Đăng kí</Text>
+
+      <Text style={[styles.label, { color: theme.colors.text }]}>Email</Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text }]}
         placeholder="Email"
-        placeholderTextColor="#555"
+        placeholderTextColor={theme.colors.placeholder}
         keyboardType="email-address"
       />
 
-      <Text style={styles.label}>Mật khẩu</Text>
-      <View style={styles.passwordContainer}>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Mật khẩu</Text>
+      <View style={[styles.passwordContainer, { backgroundColor: theme.colors.inputBackground }]}>
         <TextInput
           value={password}
           onChangeText={setPassword}
-          style={styles.passwordInput}
+          style={[styles.passwordInput, { color: theme.colors.text }]}
           placeholder="Mật khẩu"
-          placeholderTextColor="#555"
+          placeholderTextColor={theme.colors.placeholder}
           secureTextEntry={!isPasswordVisible}
         />
         <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-          <Feather 
-            name={isPasswordVisible ? 'eye-off' : 'eye'} 
-            size={22} 
-            color="#555" 
+          <Feather
+            name={isPasswordVisible ? 'eye-off' : 'eye'}
+            size={22}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.label}>Xác nhận mật khẩu</Text>
-      <View style={styles.passwordContainer}>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Xác nhận mật khẩu</Text>
+      <View style={[styles.passwordContainer, { backgroundColor: theme.colors.inputBackground }]}>
         <TextInput
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          style={styles.passwordInput}
+          style={[styles.passwordInput, { color: theme.colors.text }]}
           placeholder="Xác nhận mật khẩu"
-          placeholderTextColor="#555"
+          placeholderTextColor={theme.colors.placeholder}
           secureTextEntry={!isConfirmPasswordVisible}
         />
         <TouchableOpacity onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}>
-          <Feather 
-            name={isConfirmPasswordVisible ? 'eye-off' : 'eye'} 
-            size={22} 
-            color="#555" 
+          <Feather
+            name={isConfirmPasswordVisible ? 'eye-off' : 'eye'}
+            size={22}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.label}>Tên</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Tên</Text>
       <TextInput
         value={name}
         onChangeText={setName}
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text }]}
         placeholder="Tên"
-        placeholderTextColor="#555"
+        placeholderTextColor={theme.colors.placeholder}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Đăng kí</Text>
+      <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={handleSignUp}>
+        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>Đăng kí</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity onPress={() => router.push("/Auth/Login")}>
-        <Text style={styles.link}>Đã có tài khoản? Đăng nhập</Text>
+
+      <TouchableOpacity onPress={() => router.push('/Auth/Login')}>
+        <Text style={[styles.link, { color: theme.colors.link }]}>Đã có tài khoản? Đăng nhập</Text>
       </TouchableOpacity>
     </View>
   );
@@ -178,45 +184,39 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: 'rgb(255, 254, 254)'
   },
   logo: {
     width: 150,
     height: 150,
     alignSelf: 'center',
     marginBottom: 5,
+    borderRadius: 75,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
-    color: '#333',
   },
   label: {
     fontSize: 16,
     marginBottom: 5,
-    color: '#555',
   },
   input: {
     height: 45,
     borderColor: '#ccc',
-    borderWidth: 1,
     borderRadius: 5,
     marginBottom: 15,
     paddingHorizontal: 10,
     fontSize: 16,
-    backgroundColor: '#fff',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderColor: '#ccc',
-    borderWidth: 1,
     borderRadius: 5,
     marginBottom: 15,
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
   },
   passwordInput: {
     flex: 1,
@@ -224,21 +224,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: 'blue',
     padding: 10,
     borderRadius: 8,
     marginBottom: 15,
     alignItems: 'center',
   },
   buttonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
   link: {
-    textAlign: "center",
-    color: "blue",
-    marginTop: 10
+    textAlign: 'center',
+    marginTop: 10,
   },
 });
 

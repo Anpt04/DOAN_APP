@@ -1,11 +1,20 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Dimensions, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Dimensions,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useFocusEffect } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
 import { getTransactions, Transaction } from '../../DB/service/transactionService';
 import { router } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { useTheme } from '../../contexts/themeContext'; // thêm useTheme
+
 const screenWidth = Dimensions.get('window').width - 40;
 const COLORS = ['rgba(238, 137, 137, 0.72)', 'blue', 'gold', 'green', 'orange', 'purple', 'cyan'];
 
@@ -18,6 +27,9 @@ interface ChartSlice {
 }
 
 export default function ReportScreen() {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+
   const [chartData, setChartData] = useState<ChartSlice[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [totalExpense, setTotalExpense] = useState<number>(0);
@@ -82,20 +94,23 @@ export default function ReportScreen() {
   const holeSize = chartSize * 0.5;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Báo cáo chi tiêu theo tháng</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Báo cáo chi tiêu theo tháng</Text>
 
       <View style={styles.monthSelection}>
         <TouchableOpacity onPress={() => changeMonth('prev')} style={styles.arrowButton}>
-          <AntDesign name="caretleft" size={24} color="black" />
+          <AntDesign name="caretleft" size={24} color={colors.text} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.monthButton} onPress={showDatePicker}>
-          <Text style={styles.monthButtonText}>
+        <TouchableOpacity
+          style={[styles.monthButton, { borderColor: colors.border, backgroundColor: colors.card }]}
+          onPress={showDatePicker}
+        >
+          <Text style={[styles.monthButtonText, { color: colors.text }]}>
             {selectedMonth.getMonth() + 1}/{selectedMonth.getFullYear()}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => changeMonth('next')} style={styles.arrowButton}>
-          <AntDesign name="caretright" size={24} color="black" />
+          <AntDesign name="caretright" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -108,21 +123,32 @@ export default function ReportScreen() {
         display="spinner"
       />
 
-      <Text style={styles.totalText}>Tổng chi: {totalExpense.toLocaleString()}₫</Text>
+      <Text style={[styles.totalText, { color: colors.text }]}>
+        Tổng chi: {totalExpense.toLocaleString()}₫
+      </Text>
 
       {chartData.length > 0 ? (
-        <View style={[styles.chartWrapper, { width: chartSize, height: chartSize }]}>
+        <View
+          style={[
+            styles.chartWrapper,
+            { width: chartSize, height: chartSize, backgroundColor: colors.background },
+          ]}
+        >
           <PieChart
             data={chartData.map(s => ({
               name: s.name,
               population: s.value,
               color: s.color,
-              legendFontColor: '#7F7F7F',
+              legendFontColor: colors.text,
               legendFontSize: 12,
             }))}
             width={chartSize}
             height={chartSize}
-            chartConfig={{ color: (opacity = 1) => `rgba(0,0,0,${opacity})` }}
+            chartConfig={{
+              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+              backgroundGradientFrom: colors.background,
+              backgroundGradientTo: colors.background,
+            }}
             accessor="population"
             backgroundColor="transparent"
             paddingLeft="90"
@@ -132,13 +158,20 @@ export default function ReportScreen() {
           {/* Lỗ trắng giữa doughnut */}
           <View
             style={[
-              styles.hole,
+              styles.hole1,
               { width: holeSize, height: holeSize, borderRadius: holeSize / 2 },
+            ]}/>
+          <View
+            style={[
+              styles.hole,
+              { width: holeSize, height: holeSize, borderRadius: holeSize / 2, backgroundColor: colors.background },
             ]}
           />
         </View>
       ) : (
-        <Text style={styles.noData}>Chưa có khoản chi trong tháng này.</Text>
+        <Text style={[styles.noData, { color: colors.placeholder }]}>
+          Chưa có khoản chi trong tháng này.
+        </Text>
       )}
 
       <FlatList
@@ -159,7 +192,7 @@ export default function ReportScreen() {
           >
             <View style={styles.item}>
               <View style={[styles.colorBox, { backgroundColor: item.color }]} />
-              <Text style={styles.itemText}>
+              <Text style={[styles.itemText, { color: colors.text }]}>
                 {item.name}: {item.value.toLocaleString()}₫ ({(item.percentage * 100).toFixed(1)}%)
               </Text>
             </View>
@@ -174,7 +207,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 5,
-    backgroundColor: '#fff',
     paddingHorizontal: 20,
   },
   title: {
@@ -192,13 +224,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 10,
   },
-  arrowText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
   monthButton: {
     borderWidth: 1,
-    borderColor: '#333',
     borderRadius: 5,
     padding: 10,
   },
@@ -219,11 +246,13 @@ const styles = StyleSheet.create({
   },
   hole: {
     position: 'absolute',
-    backgroundColor: '#fff',
+  },
+  hole1: {
+    position: 'absolute',
+    backgroundColor: 'rgb(255, 255, 255)',
   },
   noData: {
     textAlign: 'center',
-    color: '#666',
     marginVertical: 20,
   },
   item: {
@@ -239,7 +268,6 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 18,
-    color: '#333',
     fontWeight: '500',
   },
 });
