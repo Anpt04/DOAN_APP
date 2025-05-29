@@ -23,15 +23,16 @@ const GOLD_UNIT_MULTIPLIER = {
 
 const fetchGoldPrice = async (date: Date): Promise<number> => {
   try {
-    const GOLD_API_KEY = "goldapi-72319m9r50j9s-io";
+    // const GOLD_API_KEY = "goldapi-4tkwsmb9e3ksy-io";
     const formattedDate = date.toISOString().split("T")[0];
     const goldRes = await fetch(`https://www.goldapi.io/api/XAU/USD?date=${formattedDate}`, {
       headers: {
-        "x-access-token": GOLD_API_KEY,
+        // "x-access-token": GOLD_API_KEY,
         "Content-Type": "application/json",
       },
     });
     const goldData = await goldRes.json();
+    // console.log("Gold Data:", goldData); // Thêm log để kiểm tra dữ liệu
     if (!goldData.price) throw new Error("No gold price");
 
     const pricePerGramUSD = goldData.price / 31.1;
@@ -51,8 +52,6 @@ const fetchGoldPrice = async (date: Date): Promise<number> => {
 
 export default function GoldTransactionScreen() {
   const { theme:{colors} } = useTheme();   // Lấy colors từ theme
-  
-
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [goldPrice, setGoldPrice] = useState<number>(0);
@@ -126,7 +125,7 @@ export default function GoldTransactionScreen() {
         <DateTimePicker
           value={date}
           mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
+          display="spinner"
           onChange={handleDateChange}
           textColor={colors.text}  // iOS only
         />
@@ -154,7 +153,7 @@ export default function GoldTransactionScreen() {
           dropdownIconColor={colors.text}  // Android only
         >
           {Object.keys(GOLD_UNIT_MULTIPLIER).map((key) => (
-            <Picker.Item key={key} label={key} value={key} color={colors.text} />
+            <Picker.Item key={key} label={key} value={key} color={'rgb(1,1,1)'} />
           ))}
         </Picker>
       </View>

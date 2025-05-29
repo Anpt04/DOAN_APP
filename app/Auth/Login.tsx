@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { router } from "expo-router";
 import { Feather } from '@expo/vector-icons'; 
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -8,13 +8,14 @@ import { useCategories } from "../contexts/categoryContext";
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../DB/firebase/firebaseConfig';
 import { useTheme } from '../contexts/themeContext'; 
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { setCategories } = useCategories();
-
-  const { theme, toggleTheme, isDark } = useTheme(); 
+  const { theme } = useTheme(); 
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -22,9 +23,12 @@ export default function Login() {
       return;
     }
 
+    setIsLoading(true); // ✅ Bắt đầu loading
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
       const catRef = collection(db, "users", user.uid, "categories");
       const snapshot = await getDocs(catRef);
       const catList = snapshot.docs.map((doc) => ({
@@ -38,6 +42,8 @@ export default function Login() {
       router.replace('/');
     } catch (error: any) {
       Alert.alert('Thất bại','Đăng nhập thất bại');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,10 +91,15 @@ export default function Login() {
       </View>
 
       <TouchableOpacity 
-        style={[styles.button, { backgroundColor: theme.colors.primary }]} 
+        style={[styles.button, { backgroundColor: theme.colors.primary, opacity: isLoading ? 0.7 : 1 }]} 
         onPress={handleLogin}
+        disabled={isLoading}
       >
-        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>Đăng nhập</Text>
+        {isLoading ? (
+          <ActivityIndicator color={theme.colors.textButton} />
+        ) : (
+          <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>Đăng nhập</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/Auth/Register")}>
@@ -100,6 +111,7 @@ export default function Login() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { 

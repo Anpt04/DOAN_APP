@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { Feather } from '@expo/vector-icons';
+import { useTheme } from '../contexts/themeContext';
 
 const ChangePasswordScreen = () => {
+  const { theme } = useTheme();
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isNewPasswordVisible, setIsNewPasswordVisible] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    
+
   const auth = getAuth();
 
   const handleChangePassword = async () => {
@@ -31,11 +34,8 @@ const ChangePasswordScreen = () => {
     }
 
     try {
-      // Xác thực lại người dùng
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, credential);
-
-      // Đổi mật khẩu
       await updatePassword(user, newPassword);
       Alert.alert('Thành công', 'Mật khẩu đã được thay đổi!');
     } catch (error: any) {
@@ -49,62 +49,65 @@ const ChangePasswordScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Đổi mật khẩu</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Đổi mật khẩu</Text>
 
-    <View style={styles.passwordContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder="Mật khẩu hiện tại"
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-        secureTextEntry={!isPasswordVisible}
-      />
-      <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-          <Feather 
-            name={isPasswordVisible ? 'eye-off' : 'eye'} 
-            size={22} 
-            color="#555" 
+      <View style={[styles.passwordContainer, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.border }]}>
+        <TextInput
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholder="Mật khẩu hiện tại"
+          placeholderTextColor={theme.colors.placeholder}
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+          secureTextEntry={!isPasswordVisible}
+        />
+        <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+          <Feather
+            name={isPasswordVisible ? 'eye-off' : 'eye'}
+            size={22}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
-    </View>
+      </View>
 
-    <View style={styles.passwordContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder="Mật khẩu mới"
-        value={newPassword}
-        onChangeText={setNewPassword}
-        secureTextEntry={!isNewPasswordVisible}
-      />
-      <TouchableOpacity onPress={() => setIsNewPasswordVisible(!isNewPasswordVisible)}>
-          <Feather 
-            name={isNewPasswordVisible ? 'eye-off' : 'eye'} 
-            size={22} 
-            color="#555" 
+      <View style={[styles.passwordContainer, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.border }]}>
+        <TextInput
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholder="Mật khẩu mới"
+          placeholderTextColor={theme.colors.placeholder}
+          value={newPassword}
+          onChangeText={setNewPassword}
+          secureTextEntry={!isNewPasswordVisible}
+        />
+        <TouchableOpacity onPress={() => setIsNewPasswordVisible(!isNewPasswordVisible)}>
+          <Feather
+            name={isNewPasswordVisible ? 'eye-off' : 'eye'}
+            size={22}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
-    </View>
+      </View>
 
-    <View style={styles.passwordContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder="Xác nhận mật khẩu mới"
-        value={confirmNewPassword}
-        onChangeText={setConfirmNewPassword}
-        secureTextEntry={!isNewPasswordVisible}
-      />
-      <TouchableOpacity onPress={() => setIsNewPasswordVisible(!isNewPasswordVisible)}>
-          <Feather 
-            name={isNewPasswordVisible ? 'eye-off' : 'eye'} 
-            size={22} 
-            color="#555" 
+      <View style={[styles.passwordContainer, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.border }]}>
+        <TextInput
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholder="Xác nhận mật khẩu mới"
+          placeholderTextColor={theme.colors.placeholder}
+          value={confirmNewPassword}
+          onChangeText={setConfirmNewPassword}
+          secureTextEntry={!isNewPasswordVisible}
+        />
+        <TouchableOpacity onPress={() => setIsNewPasswordVisible(!isNewPasswordVisible)}>
+          <Feather
+            name={isNewPasswordVisible ? 'eye-off' : 'eye'}
+            size={22}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
-    </View>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
-        <Text style={styles.buttonText}>Xác nhận đổi mật khẩu</Text>
+      <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={handleChangePassword}>
+        <Text style={[styles.buttonText, { color: theme.colors.textButton }]}>Xác nhận đổi mật khẩu</Text>
       </TouchableOpacity>
     </View>
   );
@@ -114,9 +117,8 @@ export default ChangePasswordScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
   },
   title: {
     fontSize: 22,
@@ -130,24 +132,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#007bff',
     padding: 15,
     borderRadius: 6,
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 15,
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
   },
 });

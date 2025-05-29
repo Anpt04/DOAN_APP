@@ -37,7 +37,7 @@ function MainStack() {
         <Stack.Screen name="Auth/Register" options={{ title: 'Đăng ký' }} />
         <Stack.Screen name="Auth/changePassword" options={{ title: '' }} />
 
-        <Stack.Screen name="screen/editCategory" options={{ title: 'Thêm mới danh mục' }} />
+        <Stack.Screen name="screen/editCategory" options={{ title: 'Danh mục' }} />
         <Stack.Screen name="screen/transaction/editTransactionScreen" options={{ title: 'Chỉnh sửa giao dịch' }} />
         <Stack.Screen name="screen/reportTransaction/reportDetail" options={{title: 'Chi tiết',}} />
         <Stack.Screen name="screen/setMonthlyLimitScreen" options={{ title: 'Hạn mức chi tiêu' }} />
