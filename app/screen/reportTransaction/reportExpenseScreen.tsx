@@ -13,10 +13,11 @@ import { PieChart } from 'react-native-chart-kit';
 import { getTransactions, Transaction } from '../../DB/service/transactionService';
 import { router } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useTheme } from '../../contexts/themeContext'; // thêm useTheme
+import { useTheme } from '../../contexts/themeContext';
 
 const screenWidth = Dimensions.get('window').width - 40;
 const COLORS = ['rgba(238, 137, 137, 0.72)', 'blue', 'gold', 'green', 'orange', 'purple', 'cyan'];
+
 
 interface ChartSlice {
   id: string;
