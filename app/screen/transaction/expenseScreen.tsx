@@ -84,7 +84,6 @@ const AddTransactionScreen: React.FC = () => {
         />
       )}
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>Ghi chú:</Text>
       <TextInput
         placeholder="Ghi chú"
         placeholderTextColor={theme.colors.placeholder}
