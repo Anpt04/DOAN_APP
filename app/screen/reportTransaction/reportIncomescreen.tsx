@@ -28,7 +28,7 @@ export default function ReportScreen() {
   const [totalExpense, setTotalExpense] = useState<number>(0);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
- const COLORS = ['rgb(110, 211, 64)', 'rgb(55, 211, 231)', 'rgb(112, 192, 37)', 'rgb(204, 81, 235)', 'rgb(55, 211, 231)', 'rgb(240, 81, 81)', 'rgb(77, 231, 103)'];
+ const COLORS = ['rgb(110, 211, 64)', 'rgb(55, 211, 231)', 'rgb(132, 27, 231)', 'rgb(204, 81, 235)', 'rgb(55, 211, 231)', 'rgb(240, 81, 81)', 'rgb(77, 231, 103)'];
 
   const showDatePicker = () => setDatePickerVisibility(true);
   const hideDatePicker = () => setDatePickerVisibility(false);
@@ -139,6 +139,18 @@ export default function ReportScreen() {
           />
           <View
             style={[
+              styles.hole1,
+              {
+                width: holeSize,
+                height: holeSize,
+                borderRadius: holeSize / 2,
+                backgroundColor: theme.colors.background,
+                borderWidth: 2,
+                borderColor: theme.colors.border,
+              },
+            ]}/>
+          <View
+            style={[
               styles.hole,
               {
                 width: holeSize,
@@ -227,6 +239,11 @@ const styles = StyleSheet.create({
   },
   hole: {
     position: 'absolute',
+  },
+  hole1: {
+    backgroundColor: 'rgb(255, 255, 255)',
+    position: 'absolute',
+
   },
   noData: {
     textAlign: 'center',
