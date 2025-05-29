@@ -24,7 +24,7 @@ export const addTransactionToCloud = async (transaction: { [key: string]: any })
   await addDoc(collection(db, "users", user.uid, "transactions"), {
     userId: user.uid,
     ...transaction,
-    createdAt: new Date(),
+    // createdAt: new Date(),
   });
 };
 
@@ -262,5 +262,26 @@ export const copyDefaultCategoriesToUser = async (userId: string) => {
 
   await batch.commit();
 };
+
+
+
+export const fetchUserProfile = async (uid: string): Promise<{ name: string | null }> => {
+  try {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      return {
+        name: data.name || null,
+      };
+    } else {
+      console.log("Không tìm thấy người dùng trong Firestore");
+      return { name: null};
+    }
+  } catch (error) {
+    console.error("Lỗi khi lấy user profile:", error);
+    return { name: null};
+  }
+};
+
 
 export default addTransactionToCloud;

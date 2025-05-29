@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import { getAuth, signOut } from 'firebase/auth';
 import { router } from 'expo-router';
 
@@ -8,12 +9,12 @@ const logout = async () => {
   
       // ✅ Quay lại màn hình đăng nhập
       router.replace('/');
-      alert('Đăng xuất thành công');
+      Alert.alert('Thành công','Đăng xuất thành công');
       // Optionally: Thêm thông báo
       // Toast.show({ type: 'success', text1: 'Đăng xuất thành công' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Logout error:', error);
-      alert('Đăng xuất thất bại');
+      Alert.alert('Thất bại','Đăng xuất thất bại' + error.message);
     }
   };
 

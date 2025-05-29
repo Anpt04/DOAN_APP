@@ -1,11 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, Button } from 'react-native';
 import { router } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
-import { getTransactions, getMonthlyLimits } from '../../DB/service/transactionService'; // Thêm hàm getMonthlyLimits
+import { getTransactions, getMonthlyLimits } from '../../DB/service/transactionService';
+import { useTheme } from "../../contexts/themeContext";
 
 export function HistoryTransactionScreen() {
+  const { theme, toggleTheme, isDark } = useTheme();
 
   const formatLocalDate = (date: Date): string => {
     const year = date.getFullYear();
@@ -19,14 +21,11 @@ export function HistoryTransactionScreen() {
     return formatLocalDate(today);
   });
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [monthlyLimit, setMonthlyLimit] = useState<number | null>(null); // Thêm trạng thái cho hạn mức
+  const [monthlyLimit, setMonthlyLimit] = useState<number | null>(null);
 
-
-  // Tính tổng tiền thu và chi theo ngày
+  // Lọc giao dịch theo ngày đã chọn
   const filteredTransactions = transactions.filter((t) => {
     if (!t.date) return false;
-
-    // Kiểm tra và chuyển đổi ngày về định dạng yyyy-MM-dd
     const dateStr = typeof t.date === 'string' ? t.date.slice(0, 10) : t.date.toDate().toISOString().slice(0, 10);
     return dateStr === selectedDate;
   });
@@ -39,13 +38,13 @@ export function HistoryTransactionScreen() {
     .filter((t) => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  // Hàm tính tổng tiền thu và chi trong tháng
+  // Tính tổng thu chi trong tháng
   const getTotalIncomeAndExpenseForMonth = (transactions: any[], month: string) => {
     const monthStart = `${month}-01`;
-    const monthEnd = `${month}-31`; // Tạo chuỗi ngày cuối tháng
+    const monthEnd = `${month}-31`;
 
     const filteredTransactionsInMonth = transactions.filter((t) => {
-      const transactionDate = t.date.slice(0, 10); // Lấy ngày giao dịch
+      const transactionDate = t.date.slice(0, 10);
       return transactionDate >= monthStart && transactionDate <= monthEnd;
     });
 
@@ -62,116 +61,108 @@ export function HistoryTransactionScreen() {
     return { totalIncomeForMonth, totalExpenseForMonth, totalForMonth };
   };
 
-  const currentMonth = selectedDate.slice(0, 7); // Lấy phần năm-tháng từ selectedDate
+  const currentMonth = selectedDate.slice(0, 7);
   const { totalIncomeForMonth, totalExpenseForMonth, totalForMonth } = getTotalIncomeAndExpenseForMonth(transactions, currentMonth);
   const formattedMonth = currentMonth.split("-").reverse().join("-");
 
-  // Kiểm tra và hiển thị thông báo khi chi tiêu gần đạt hạn mức
+  // Cảnh báo khi chi tiêu gần hoặc vượt hạn mức
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
-        setMonthlyLimit(null); // reset ngay khi tháng thay đổi
-  
+        setMonthlyLimit(null);
         const data = await getTransactions();
         setTransactions(data);
-  
         const limit = await getMonthlyLimits(selectedDate.slice(0, 7));
         setMonthlyLimit(limit);
-  
-        console.log("Hạn mức chi tiêu tháng này:", limit);
-        console.log("Ngày hiện tại:", selectedDate);
-        console.log(formattedMonth)
-        // Kiểm tra luôn trong callback
+
         if (limit !== null && totalExpenseForMonth >= limit * 0.9 && totalExpenseForMonth < limit) {
           Alert.alert(
             "Thông báo",
             `Chi tiêu của bạn trong tháng ${formattedMonth} đã gần đạt hạn mức (${totalExpenseForMonth.toLocaleString()}₫ / ${limit.toLocaleString()}₫).`
           );
-        }
-        else if (limit !== null && totalExpenseForMonth > limit) {
+        } else if (limit !== null && totalExpenseForMonth > limit) {
           Alert.alert(
             "Thông báo",
             `Chi tiêu của bạn trong tháng ${formattedMonth} đã vượt quá hạn mức (${totalExpenseForMonth.toLocaleString()}₫ / ${limit.toLocaleString()}₫).`
           );
         }
       };
-  
+
       fetchData();
     }, [selectedDate, totalExpenseForMonth])
   );
-  
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.calendar}>
+        <View style={{ backgroundColor: theme.colors.card, borderRadius: 10, overflow: 'hidden' }}>
+
         <Calendar
+          key={theme.colors.background}
           onDayPress={(day: { dateString: string }) => setSelectedDate(day.dateString)}
           onMonthChange={(month: { year: number; month: number }) => {
             const currentDay = parseInt(selectedDate.split('-')[2], 10);
             const newDate = new Date(month.year, month.month - 1, currentDay);
-        
             const newSelectedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
             setSelectedDate(newSelectedDate);
           }}
           markedDates={{
-            [selectedDate]: { selected: true, marked: true, selectedColor: 'rgb(124, 124, 124)' },
+            [selectedDate]: { selected: true, marked: true, selectedColor: theme.colors.primary },
           }}
           theme={{
-            calendarBackground: 'rgb(255, 255, 255)',
-            dayTextColor: '#rgb(0, 0, 0)',
-            monthTextColor: '#rgb(0, 0, 0)',
-            arrowColor: '#rgb(0, 0, 0)',
-            
+            calendarBackground: theme.colors.card,
+            dayTextColor: theme.colors.text,
+            monthTextColor: theme.colors.text,
+            arrowColor: theme.colors.text,
+            todayTextColor: theme.colors.primary,
           }}
         />
+        </View>
       </View>
 
-      {/* Tổng tiền thu và chi theo tháng */}
-      <View style={styles.summaryMonthContainer}>
+      <View style={[styles.summaryMonthContainer, { backgroundColor: theme.colors.card }]}>
         <View style={styles.summaryMonth}>
-          <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={[styles.summaryTextMonth, { color: 'rgb(24, 39, 245)' }]}>Thu:  {totalIncomeForMonth.toLocaleString()}đ</Text>
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={[styles.summaryTextMonth, { color: theme.colors.incomText }]}>Thu: {totalIncomeForMonth.toLocaleString()}đ</Text>
           </View>
-          <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={[styles.summaryTextMonth, { color: 'rgb(245, 30, 30)' }]}>Chi: {totalExpenseForMonth.toLocaleString()}đ</Text>
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={[styles.summaryTextMonth, { color: theme.colors.expenseText }]}>Chi: {totalExpenseForMonth.toLocaleString()}đ</Text>
           </View>
         </View>
-
-        <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={[styles.summaryTextMonth, { color: 'black' }]}>Tổng: {totalForMonth.toLocaleString()}đ</Text>
+        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={[styles.summaryTextMonth, { color: theme.colors.text }]}>Tổng: {totalForMonth.toLocaleString()}đ</Text>
         </View>
       </View>
 
-      {/* Tổng tiền thu và chi theo ngày */}
-      <View style={styles.summary}>
-        <Text style={[styles.summaryText, { color: 'rgb(24, 39, 245)' }]}>Tiền thu ngày: {totalIncome.toLocaleString()}đ</Text>
-        <Text style={[styles.summaryText, { color: 'rgb(245, 30, 30)' }]}>Tiền chi ngày: {totalExpense.toLocaleString()}đ</Text>
-        <Text style={[styles.summaryText, { color: 'black' }]}>Tổng ngày: {(totalIncome - totalExpense).toLocaleString()}đ</Text>
+      <View style={[styles.summary, { backgroundColor: theme.colors.card }]}>
+        <Text style={[styles.summaryText, { color:  theme.colors.incomText }]}>Tiền thu ngày: {totalIncome.toLocaleString()}đ</Text>
+        <Text style={[styles.summaryText, { color: theme.colors.expenseText }]}>Tiền chi ngày: {totalExpense.toLocaleString()}đ</Text>
+        <Text style={[styles.summaryText, { color: theme.colors.text }]}>Tổng ngày: {(totalIncome - totalExpense).toLocaleString()}đ</Text>
       </View>
-      
-      <ScrollView contentContainerStyle={styles.scrollContainer}> 
+
+      <ScrollView contentContainerStyle={[styles.scrollContainer, { backgroundColor: theme.colors.background }]}>
         {filteredTransactions.length > 0 ? (
           filteredTransactions.map((item) => (
-            <TouchableOpacity key={item.id} onPress={() => {
-              if (item.category === 'buyGold' || item.category === 'sellGold') {
-                Alert.alert(
-                  'Không thể chỉnh sửa',
-                  'Bạn không thể chỉnh sửa giao dịch vàng.',
-                  [{ text: 'OK' }]
-                );
-                return;
-              }
-              router.push({ pathname: '/screen/transaction/editTransactionScreen', params: { id: item.id } })}}>
-              <View style={styles.item}>
-                <Text style={styles.itemText}>{item.categoryName}</Text>
-                <Text style={[styles.itemAmount, { color: item.type === 'income' ? 'rgb(24, 39, 245)' : 'rgb(245, 30, 30)' }]}>
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => {
+                if (item.category === 'buyGold' || item.category === 'sellGold') {
+                  Alert.alert('Không thể chỉnh sửa', 'Bạn không thể chỉnh sửa giao dịch vàng.', [{ text: 'OK' }]);
+                  return;
+                }
+                router.push({ pathname: '/screen/transaction/editTransactionScreen', params: { id: item.id } });
+              }}
+            >
+              <View style={[styles.item, { backgroundColor: theme.colors.card }]}>
+                <Text style={[styles.itemText, { color: theme.colors.text }]}>{item.categoryName}</Text>
+                <Text style={[styles.itemAmount, { color: item.type === 'income' ? theme.colors.incomText : theme.colors.expenseText }]}>
                   {item.amount.toLocaleString()}đ
                 </Text>
               </View>
             </TouchableOpacity>
           ))
         ) : (
-          <Text style={{ color: '#aaa', textAlign: 'center', marginTop: 20 }}>
+          <Text style={{ color: theme.colors.placeholder, textAlign: 'center', marginTop: 20 }}>
             Không có giao dịch trong ngày
           </Text>
         )}
@@ -183,14 +174,12 @@ export function HistoryTransactionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgb(240, 240, 240)',
     paddingTop: 20,
     paddingHorizontal: 10,
   },
   scrollContainer: {
     width: '100%',
     padding: 10,
-    backgroundColor: 'rgb(240, 240, 240)',
     flexGrow: 1,
     borderRadius: 10,
   },
@@ -207,9 +196,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgb(255, 255, 255)',
     borderRadius: 10,
-    marginBottom:15,
+    marginBottom: 15,
     padding: 3,
   },
   summaryTextMonth: {
@@ -219,7 +207,6 @@ const styles = StyleSheet.create({
   summary: {
     marginBottom: 15,
     padding: 10,
-    backgroundColor: '#rgb(255, 255, 255)',
     borderRadius: 10,
   },
   summaryText: {
@@ -229,13 +216,11 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: 'rgb(255, 255, 255)',
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
   },
   itemText: {
-    color: '#rgb(0, 0, 0)',
     fontSize: 16,
   },
   itemAmount: {

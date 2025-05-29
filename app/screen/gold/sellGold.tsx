@@ -13,6 +13,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { addTransaction } from "../../DB/service/transactionService";
+import { useTheme } from "../../contexts/themeContext";  // thêm import useTheme
 
 const GOLD_UNIT_MULTIPLIER = {
   "chỉ": 3.75,
@@ -49,6 +50,9 @@ const fetchGoldPrice = async (date: Date): Promise<number> => {
 };
 
 export default function GoldTransactionScreen() {
+  const { theme:{colors} } = useTheme();   // Lấy colors từ theme
+  
+
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [goldPrice, setGoldPrice] = useState<number>(0);
@@ -108,12 +112,15 @@ export default function GoldTransactionScreen() {
   const pricePerLuong = goldPrice * GOLD_UNIT_MULTIPLIER["lượng"];
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.title}>Giao dịch bán vàng</Text>
+    <ScrollView contentContainerStyle={[styles.scrollContainer, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Giao dịch bán vàng</Text>
 
-      <Text style={styles.label}>Chọn ngày:</Text>
-      <Pressable onPress={() => setShowPicker(true)} style={styles.dateButton}>
-        <Text style={styles.dateText}>{date.toLocaleDateString("vi-VN")}</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Chọn ngày:</Text>
+      <Pressable
+        onPress={() => setShowPicker(true)}
+        style={[styles.dateButton, { borderColor: colors.border, backgroundColor: colors.card }]}
+      >
+        <Text style={[styles.dateText, { color: colors.text }]}>{date.toLocaleDateString("vi-VN")}</Text>
       </Pressable>
       {showPicker && (
         <DateTimePicker
@@ -121,52 +128,59 @@ export default function GoldTransactionScreen() {
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={handleDateChange}
+          textColor={colors.text}  // iOS only
         />
       )}
 
-      <Text style={styles.label}>Giá vàng 24k (1 gram):</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Giá vàng 24k (1 gram):</Text>
       {goldPrice > 0 ? (
-        <Text style={styles.price}>{goldPrice.toLocaleString()} VND/gram</Text>
+        <Text style={[styles.price, { color: colors.gold }]}>{goldPrice.toLocaleString()} VND/gram</Text>
       ) : (
-        <ActivityIndicator size="small" color="#000" />
+        <ActivityIndicator size="small" color={colors.primary} />
       )}
 
-      <Text style={styles.label}>Giá vàng theo chỉ (3.75g):</Text>
-      <Text style={styles.price}>{pricePerChi.toLocaleString()} VND/chỉ</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Giá vàng theo chỉ (3.75g):</Text>
+      <Text style={[styles.price, { color: colors.gold }]}>{pricePerChi.toLocaleString()} VND/chỉ</Text>
 
-      <Text style={styles.label}>Giá vàng theo lượng (37.5g):</Text>
-      <Text style={styles.price}>{pricePerLuong.toLocaleString()} VND/lượng</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Giá vàng theo lượng (37.5g):</Text>
+      <Text style={[styles.price, { color: colors.gold }]}>{pricePerLuong.toLocaleString()} VND/lượng</Text>
 
-      <Text style={styles.label}>Đơn vị vàng:</Text>
-      <View style={styles.pickerContainer}>
-        <Picker selectedValue={unit} onValueChange={(val) => setUnit(val)}>
+      <Text style={[styles.label, { color: colors.text }]}>Đơn vị vàng:</Text>
+      <View style={[styles.pickerContainer, { borderColor: colors.border, backgroundColor: colors.card }]}>
+        <Picker
+          selectedValue={unit}
+          onValueChange={(val) => setUnit(val)}
+          style={{ color: colors.text }}
+          dropdownIconColor={colors.text}  // Android only
+        >
           {Object.keys(GOLD_UNIT_MULTIPLIER).map((key) => (
-            <Picker.Item key={key} label={key} value={key} />
+            <Picker.Item key={key} label={key} value={key} color={colors.text} />
           ))}
         </Picker>
       </View>
 
-      <Text style={styles.label}>Khối lượng:</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Khối lượng:</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.card }]}
         keyboardType="numeric"
         placeholder="Nhập số lượng"
+        placeholderTextColor={colors.placeholder}
         value={quantity}
         onChangeText={setQuantity}
       />
-      <Text style={styles.label}>Ghi chú</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Ghi chú</Text>
       <TextInput
         placeholder="Ghi chú"
-        placeholderTextColor="#555"
+        placeholderTextColor={colors.placeholder}
         value={note}
         onChangeText={setNote}
-        style={styles.input}
+        style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.card }]}
       />
 
-      <Text style={styles.label}>Số tiền quy đổi:</Text>
-      <Text style={styles.amount}>{calculateAmount().toLocaleString()} VND</Text>
-      <Pressable style={styles.button} onPress={handleAddTransaction}>
-        <Text style={styles.buttonText}>Thêm giao dịch bán</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Số tiền quy đổi:</Text>
+      <Text style={[styles.amount, { color: colors.gold }]}>{calculateAmount().toLocaleString()} VND</Text>
+      <Pressable style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleAddTransaction}>
+        <Text style={[styles.buttonText, { color: colors.textButton }]}>Thêm giao dịch bán</Text>
       </Pressable>
     </ScrollView>
   );
@@ -175,7 +189,6 @@ export default function GoldTransactionScreen() {
 const styles = StyleSheet.create({
   scrollContainer: {
     padding: 20,
-    backgroundColor: "#fff",
     flexGrow: 1,
   },
   title: {
@@ -193,25 +206,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginTop: 5,
-    borderColor: "#ccc",
-    backgroundColor: "#f9f9f9",
   },
   dateText: {
     fontSize: 16,
   },
   price: {
     fontSize: 18,
-    color: "#4caf50",
     marginVertical: 3,
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
     padding: 10,
     marginTop: 5,
     borderRadius: 5,
@@ -219,19 +227,16 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 18,
-    color: "#d00000",
     marginTop: 10,
     fontWeight: "bold",
   },
   button: {
     marginTop: 20,
-    backgroundColor: "#4caf50",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
   },
